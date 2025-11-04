@@ -2,15 +2,20 @@ package ex1;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.nio.charset.StandardCharsets;
 
 public class HandleFile {
     private String fileName;
-    private int blockSize = 64;
+    private int blockSize;
+    private BufferedInputStream bInStream;
+    private String leftOver = "";
+    private Boolean EOF = false;
 
     public HandleFile(String fileName) {
         this.fileName = fileName;
+        this.blockSize = 60;
     }
 
     public HandleFile(String fileName, int blockSize) {
@@ -18,18 +23,79 @@ public class HandleFile {
         this.blockSize = blockSize;
     }
 
-    public String readOneBlock() throws IOException {
-        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName))) {
-            byte[] buffer = new byte[blockSize];
-            int bytesRead = bis.read(buffer); // read one block only
+    public void open() throws IOException {
+        bInStream = new BufferedInputStream(new FileInputStream(fileName));
 
-            if (bytesRead == -1) {
-                return ""; // EOF or empty file
-            }
-
-            return new String(buffer, 0, bytesRead, StandardCharsets.UTF_8);
-        }
     }
+
+
+    public void close() throws IOException {
+        if(bInStream != null) {
+            bInStream.close();
+        }
+        bInStream = null;
+    }
+
+    public List<Record> readBlock() throws IOException {
+        if(EOF){
+            return new ArrayList<>();
+        }
+
+        byte[] buffer = new byte[blockSize];
+        int bytesRead = bInStream.read(buffer);
+
+        if(bytesRead == -1){  //end of file bInStream.read return -1
+            EOF = true;
+            if(!leftOver.isEmpty()){
+                List<Record> recordList = new ArrayList<>();
+                recordList.add(new Record(leftOver));
+                leftOver = "";
+                return recordList;
+            }
+            return new ArrayList<>();
+        }
+
+        String block = new String(buffer, 0, bytesRead, StandardCharsets.UTF_8);
+        String[] lines = block.split("\\r?\\n");
+
+        List<Record> recordList = new ArrayList<>();
+
+        if(!leftOver.isEmpty()){
+            recordList.add(new Record(leftOver+lines[0]));
+            lines = java.util.Arrays.copyOfRange( lines, 1, lines.length);
+        }
+
+        if(!block.endsWith("\n") && !block.endsWith("\r")){
+            leftOver = lines[lines.length - 1]; // last line
+            lines = java.util.Arrays.copyOf(lines, lines.length - 1);
+        }else {
+            leftOver = "";
+        }
+
+        for(String line : lines){
+            line.trim(); //remove white spaces
+            if(!line.isEmpty()){
+                try{
+                    recordList.add(new Record(line));
+                }catch (Exception e){
+                    System.err.println("Invalid record line: " + line);
+                }
+            }
+        }
+        return recordList;
+    }
+//    public String readOneBlock() throws IOException {
+//        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName))) {
+//            byte[] buffer = new byte[blockSize];
+//            int bytesRead = bis.read(buffer); // read one block only
+//
+//            if (bytesRead == -1) {
+//                return ""; // EOF or empty file
+//            }
+//
+//            return new String(buffer, 0, bytesRead, StandardCharsets.UTF_8);
+//        }
+//    }
 
     /**
      * Reads the file in fixed-size byte chunks, but only returns complete CSV records (lines).
