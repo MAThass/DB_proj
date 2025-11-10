@@ -5,19 +5,19 @@ import java.util.StringTokenizer;
 public class Record {
     private double  mass = 0;
     private double height = 0;
-    private double potential_energy = 0;
+    //private double potential_energy = 0;
 
     public Record(double mass, double height) {
         this.mass = mass;
         this.height = height;
-        potential_energy = mass*height*ConstValues.g_const;
+        //potential_energy = mass*height*ConstValues.g_const;
     }
 
     public Record(String line){
         StringTokenizer tokenizer = new StringTokenizer(line, ";");
         mass = Double.parseDouble(tokenizer.nextToken());
         height = Double.parseDouble(tokenizer.nextToken());
-        potential_energy = mass*height*ConstValues.g_const;
+        //potential_energy = mass*height*ConstValues.g_const;
     }
 
     public double getHeight() {
@@ -37,11 +37,12 @@ public class Record {
     }
 
     public double getPotential_energy() {
-        return potential_energy;
+        return mass*height*ConstValues.g_const;
+        //return potential_energy;
     }
 
     @Override
     public String toString(){
-        return (mass + ";" + height );
+        return (mass + ";" + height + "\n");
     }
 }

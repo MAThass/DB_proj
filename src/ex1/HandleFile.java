@@ -6,16 +6,17 @@ import java.util.Arrays;
 import java.util.List;
 import java.nio.charset.StandardCharsets;
 
-public class HandleFile {
+public class HandleFile implements RecordIO {
     private String fileName;
     private int blockSize;
     private BufferedInputStream bInStream;
-    private String leftOver = "";
+    private BufferedOutputStream bOutStream;
+    private String inputBlock = "";
     private Boolean EOF = false;
 
     public HandleFile(String fileName) {
         this.fileName = fileName;
-        this.blockSize = 60;
+        this.blockSize = ConstValues.blockSize;
     }
 
     public HandleFile(String fileName, int blockSize) {
@@ -23,129 +24,66 @@ public class HandleFile {
         this.blockSize = blockSize;
     }
 
-    public void open() throws IOException {
+    public void openToRead() throws IOException {
         bInStream = new BufferedInputStream(new FileInputStream(fileName));
-
     }
 
+    public void openToWrite() throws IOException {
+        bOutStream = new BufferedOutputStream(new FileOutputStream(fileName));
+    }
 
+    @Override
+    public Record readRecord() throws IOException {
+        if (EOF) return null;
+        StringBuilder lineBuilder = new StringBuilder(inputBlock);
+
+        byte[] buffer = new byte[blockSize]; //create buffer to read chunks of input
+        int bytesRead;
+        while (true) {
+            int newlinePos = lineBuilder.indexOf("\n");  // find position of new line, last element od record
+            if (newlinePos >= 0) {  // record exist before new line
+                String line = lineBuilder.substring(0, newlinePos).trim(); // extract record and remove white spaces
+                inputBlock = lineBuilder.substring(newlinePos + 1); // save rest of input, without first record
+                if (!line.isEmpty())  // if in line is record return it, else read next chunk
+                    return new Record(line);
+            }
+
+            bytesRead = bInStream.read(buffer); // read chunk of input
+            if (bytesRead == -1) { // if not read data
+                EOF = true;
+                if (lineBuilder.length() == 0) // if there are not and record in memory
+                    return null;
+                String last = lineBuilder.toString().trim();
+                if (!last.isEmpty())
+                    return new Record(last);
+                return null;
+            }
+
+            lineBuilder.append(new String(buffer, 0, bytesRead, StandardCharsets.UTF_8)); // add readed chunk to lineBuilder
+        }
+    }
+
+    @Override
+    public void saveRun(List<Record> records, int runIndex) throws IOException {
+        String runName = "runs/run" +  runIndex + ".csv";
+        HandleFile runFile =  new HandleFile(runName,this.blockSize);
+        runFile.openToWrite();
+        for(Record record : records) {
+            runFile.writeRecord(record);
+        }
+        runFile.close();
+    }
+
+    @Override
+    public void writeRecord(Record record) throws IOException {
+        String line = record.toString();
+        bOutStream.write(line.getBytes(StandardCharsets.UTF_8));
+    }
+
+    @Override
     public void close() throws IOException {
-        if(bInStream != null) {
-            bInStream.close();
-        }
-        bInStream = null;
+        if (bInStream != null) bInStream.close();
+        if (bOutStream != null) bOutStream.close();
     }
 
-    public List<Record> readBlock() throws IOException {
-        if(EOF){
-            return new ArrayList<>();
-        }
-
-        byte[] buffer = new byte[blockSize];
-        int bytesRead = bInStream.read(buffer);
-
-        if(bytesRead == -1){  //end of file bInStream.read return -1
-            EOF = true;
-            if(!leftOver.isEmpty()){
-                List<Record> recordList = new ArrayList<>();
-                recordList.add(new Record(leftOver));
-                leftOver = "";
-                return recordList;
-            }
-            return new ArrayList<>();
-        }
-
-        String block = new String(buffer, 0, bytesRead, StandardCharsets.UTF_8);
-        String[] lines = block.split("\\r?\\n");
-
-        List<Record> recordList = new ArrayList<>();
-
-        if(!leftOver.isEmpty()){
-            recordList.add(new Record(leftOver+lines[0]));
-            lines = java.util.Arrays.copyOfRange( lines, 1, lines.length);
-        }
-
-        if(!block.endsWith("\n") && !block.endsWith("\r")){
-            leftOver = lines[lines.length - 1]; // last line
-            lines = java.util.Arrays.copyOf(lines, lines.length - 1);
-        }else {
-            leftOver = "";
-        }
-
-        for(String line : lines){
-            line.trim(); //remove white spaces
-            if(!line.isEmpty()){
-                try{
-                    recordList.add(new Record(line));
-                }catch (Exception e){
-                    System.err.println("Invalid record line: " + line);
-                }
-            }
-        }
-        return recordList;
-    }
-//    public String readOneBlock() throws IOException {
-//        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName))) {
-//            byte[] buffer = new byte[blockSize];
-//            int bytesRead = bis.read(buffer); // read one block only
-//
-//            if (bytesRead == -1) {
-//                return ""; // EOF or empty file
-//            }
-//
-//            return new String(buffer, 0, bytesRead, StandardCharsets.UTF_8);
-//        }
-//    }
-
-    /**
-     * Reads the file in fixed-size byte chunks, but only returns complete CSV records (lines).
-     */
-    public List<Record> readFileByChunks() throws IOException {
-        List<Record> records = new ArrayList<>();
-
-        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName))) {
-            byte[] buffer = new byte[blockSize];
-            int bytesRead;
-            StringBuilder leftover = new StringBuilder();  // stores incomplete line from previous chunk
-            int blockCount = 0;
-
-            while ((bytesRead = bis.read(buffer)) != -1) {
-                blockCount++;
-
-                // Convert bytes to string
-                String chunk = new String(buffer, 0, bytesRead);
-
-                // Add leftover from previous block
-                chunk = leftover + chunk;
-
-                // Split by newline
-                String[] lines = chunk.split("\\r?\\n");
-
-                // If the last line is incomplete, save it for next chunk
-                leftover.setLength(0);
-                if (!chunk.endsWith("\n") && !chunk.endsWith("\r")) {
-                    leftover.append(lines[lines.length - 1]);
-                    // Don’t process last partial line
-                    lines = java.util.Arrays.copyOf(lines, lines.length - 1);
-                }
-
-                // Process full lines only
-                for (String line : lines) {
-                    line = line.trim();
-                    if (!line.isEmpty()) {
-                        try {
-                            records.add(new Record(line));
-                        } catch (Exception e) {
-                            System.err.println("Skipping invalid record: " + line);
-                        }
-                    }
-                }
-            }
-
-            // Process last leftover only if it’s complete
-
-        }
-
-        return records;
-    }
 }

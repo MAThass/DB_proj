@@ -1,0 +1,18 @@
+package ex1;
+
+import java.io.IOException;
+import java.util.List;
+
+public interface RecordIO {
+    Record readRecord() throws IOException;
+
+    void saveRun(List<Record> records, int runIndex) throws IOException;
+
+    void writeRecord(Record record) throws IOException;
+
+    void close() throws IOException;
+
+    void openToRead() throws IOException;
+
+    void openToWrite() throws IOException;
+}
