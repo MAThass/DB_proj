@@ -1,5 +1,6 @@
 package ex1;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import static java.util.Collections.swap;
@@ -58,6 +59,14 @@ public class Sort {
 
             } while (index < i);
         }
+    }
+
+    public static void buildMinHeapForRuns(){
+
+    }
+
+    public static void mergeRuns(List<File> runsList){
+
     }
 
 }

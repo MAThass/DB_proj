@@ -6,7 +6,7 @@ import java.util.List;
 public interface RecordIO {
     Record readRecord() throws IOException;
 
-    void saveRun(List<Record> records, int runIndex) throws IOException;
+    void writeRun(List<Record> records, int runIndex) throws IOException;
 
     void writeRecord(Record record) throws IOException;
 

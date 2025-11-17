@@ -12,7 +12,11 @@ public class HandleFile implements RecordIO {
     private BufferedInputStream bInStream;
     private BufferedOutputStream bOutStream;
     private String inputBlock = "";
+    private byte[] writeBlockBuffer;
+    private int writePos = 0;
     private Boolean EOF = false;
+
+
 
     public HandleFile(String fileName) {
         this.fileName = fileName;
@@ -22,6 +26,7 @@ public class HandleFile implements RecordIO {
     public HandleFile(String fileName, int blockSize) {
         this.fileName = fileName;
         this.blockSize = blockSize;
+        int writePos = 0;
     }
 
     public void openToRead() throws IOException {
@@ -30,6 +35,7 @@ public class HandleFile implements RecordIO {
 
     public void openToWrite() throws IOException {
         bOutStream = new BufferedOutputStream(new FileOutputStream(fileName));
+        writeBlockBuffer = new byte[blockSize];
     }
 
     @Override
@@ -49,7 +55,12 @@ public class HandleFile implements RecordIO {
             }
 
             bytesRead = bInStream.read(buffer); // read chunk of input
-            if (bytesRead == -1) { // if not read data
+            if(bytesRead != -1)
+            {
+
+                Statistic.incrementReadBlocksCounter();
+                lineBuilder.append(new String(buffer, 0, bytesRead, StandardCharsets.UTF_8)); // add readed chunk to lineBuilder
+            }else { // if not read data
                 EOF = true;
                 if (lineBuilder.length() == 0) // if there are not and record in memory
                     return null;
@@ -58,13 +69,11 @@ public class HandleFile implements RecordIO {
                     return new Record(last);
                 return null;
             }
-
-            lineBuilder.append(new String(buffer, 0, bytesRead, StandardCharsets.UTF_8)); // add readed chunk to lineBuilder
         }
     }
 
     @Override
-    public void saveRun(List<Record> records, int runIndex) throws IOException {
+    public void writeRun(List<Record> records, int runIndex) throws IOException {
         String runName = "runs/run" +  runIndex + ".csv";
         HandleFile runFile =  new HandleFile(runName,this.blockSize);
         runFile.openToWrite();
@@ -74,16 +83,34 @@ public class HandleFile implements RecordIO {
         runFile.close();
     }
 
+    private void writeBlock() throws IOException {
+        if (writePos == 0) return;
+
+        bOutStream.write(writeBlockBuffer, 0, writePos);
+        Statistic.incrementWriteBlocksCounter();
+        writePos = 0;
+    }
+
     @Override
     public void writeRecord(Record record) throws IOException {
-        String line = record.toString();
-        bOutStream.write(line.getBytes(StandardCharsets.UTF_8));
+        String line = record.toString() + "\n";
+        byte[] data = line.getBytes(StandardCharsets.UTF_8);
+
+        if (writePos + data.length > blockSize) {
+            writeBlock();
+        }
+        // z data kopiujemy od elementu 0 do writeBlockBuffer od pozucji writePos ata.lenght elementow
+        System.arraycopy(data, 0, writeBlockBuffer, writePos, data.length);
+        writePos += data.length;
     }
 
     @Override
     public void close() throws IOException {
         if (bInStream != null) bInStream.close();
-        if (bOutStream != null) bOutStream.close();
+        if (bOutStream != null){
+            writeBlock();
+            bOutStream.close();
+        }
     }
 
 }

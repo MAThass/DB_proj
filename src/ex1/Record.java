@@ -43,6 +43,6 @@ public class Record {
 
     @Override
     public String toString(){
-        return (mass + ";" + height + "\n");
+        return (mass + ";" + height);
     }
 }
