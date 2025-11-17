@@ -7,8 +7,8 @@ void main() throws IOException {
     int b = ConstValues.blockingFactor;
     int n = ConstValues.numberOfBuffers;
 
-    GenRandom.createFile(ConstValues.numberOfRecord);
-    RecordIO IO = new HandleFile("gen.csv", 60);
+
+    RecordIO IO = new HandleFile("data.csv", 60);
     //List<Record> recordList = new ArrayList<>();
     try {
         IO.openToRead();
@@ -39,7 +39,4 @@ void main() throws IOException {
     }
 
     IO.close();
-
-
-
 }
