@@ -1,8 +1,9 @@
 package ex1;
 
+import java.util.Locale;
 import java.util.StringTokenizer;
 
-public class Record {
+public class Record implements Comparable<Record>{
     private double  mass = 0;
     private double height = 0;
     //private double potential_energy = 0;
@@ -41,8 +42,16 @@ public class Record {
         //return potential_energy;
     }
 
+
+    @Override
+    public int compareTo(Record record) {
+        return Double.compare(this.getPotential_energy(), record.getPotential_energy());
+    }
+
     @Override
     public String toString(){
-        return (mass + ";" + height);
+        String m = String.format(Locale.US, "%05.2f", mass);
+        String h = String.format(Locale.US, "%05.2f", height);
+        return (m + ";" + h);
     }
 }

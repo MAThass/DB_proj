@@ -10,7 +10,7 @@ void main() throws IOException {
     int n = ConstValues.numberOfBuffers;
 
     GenRandom.createFile(ConstValues.numberOfRecord);
-    RecordIO IO = new HandleFile("gen.csv", 1024);
+    RecordIO IO = new HandleFile("gen.csv");
     //List<Record> recordList = new ArrayList<>();
     try {
         IO.openToRead();
@@ -38,29 +38,47 @@ void main() throws IOException {
     if(!recordsInByffer.isEmpty()){
         Sort.heapSort(recordsInByffer);
         IO.writeRun(recordsInByffer, runIndex);
+        runIndex++;
         recordsInByffer.clear();
     }
     //################# wczytanie danych i stworzenie posortowanych biegow
 
     File runsFolder = new File("runs");
     File[] runsFiles = runsFolder.listFiles();
-    long runsNumber = runsFiles.length;
-    List<File> runslist = Arrays.asList(runsFiles);
-    while(runsNumber > 1){
-        for (int i = 0; i < runslist.size(); i += (n - 1)) {
+    //List<File> runslist = Arrays.asList(runsFiles);
+    List<RecordIO> runsList = new ArrayList<>(runsFiles.length);
+
+    for (int i = 0; i < runsFiles.length; i++) {
+        runsList.add(new HandleFile(runsFiles[i].getAbsolutePath()));
+    }
+
+    while(runsFiles.length > 1){
+        for (int i = 0; i < runsList.size(); i += (n - 1)) {
             // the number of runes may not be a multiple of the range
-            int lastRun = Math.min(i + (n - 1), runslist.size());
-            List<File> group = runslist.subList(i, lastRun);
-            Sort.mergeRuns(group);
+            int lastRun = Math.min(i + (n - 1), runsList.size());
+            List<RecordIO> group = runsList.subList(i, lastRun);
+            Sort.mergeRuns(group, runIndex);
+            runIndex++;
             //zapisanie run na dysku ???
         }
-
-
-        runsNumber =runsFiles.length;
+        runsFiles = runsFolder.listFiles();
+        runsList.clear();
+        for (int i = 0; i < runsFiles.length; i++) {
+            runsList.add(new HandleFile(runsFiles[i].getAbsolutePath()));
+        }
     }
 
     IO.close();
 
+    System.out.println("read block "+Statistic.readBlocksCounter);
+    System.out.println("write block "+Statistic.writeBlocksCounter);
+     N = ConstValues.numberOfRecord;
+     b = ConstValues.blockingFactor;
+     n = ConstValues.numberOfBuffers;
 
+    double B = N / b;
 
+    double expected = 2 * B * (Math.log(B) / Math.log(n));  // log_n(B)
+
+    System.out.println("Expected IO = " + expected);
 }

@@ -26,8 +26,10 @@ public class HandleFile implements RecordIO {
     public HandleFile(String fileName, int blockSize) {
         this.fileName = fileName;
         this.blockSize = blockSize;
-        int writePos = 0;
+        this.writePos = 0;
     }
+
+
 
     public void openToRead() throws IOException {
         bInStream = new BufferedInputStream(new FileInputStream(fileName));
@@ -103,6 +105,38 @@ public class HandleFile implements RecordIO {
         System.arraycopy(data, 0, writeBlockBuffer, writePos, data.length);
         writePos += data.length;
     }
+
+    public boolean deleteFile() {
+        // Bezpieczne zamknięcie strumieni, jeśli plik był otwierany
+        try {
+            if (bInStream != null) {
+                bInStream.close();
+            }
+            if (bOutStream != null) {
+                writeBlock();   // upewniamy się, że bufor został opróżniony
+                bOutStream.close();
+            }
+        } catch (IOException e) {
+            System.err.println("Błąd podczas zamykania strumieni pliku: " + fileName);
+            e.printStackTrace();
+        }
+
+        File f = new File(fileName);
+
+        if (!f.exists()) {
+            System.out.println("Plik nie istnieje i nie może zostać usunięty: " + fileName);
+            return false;
+        }
+
+        boolean deleted = f.delete();
+
+        if (!deleted) {
+            System.err.println("Nie udało się usunąć pliku: " + fileName);
+        }
+
+        return deleted;
+    }
+
 
     @Override
     public void close() throws IOException {

@@ -2,6 +2,7 @@ package ex1;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Locale;
 import java.util.Random;
 
 public class GenRandom {
@@ -13,8 +14,8 @@ public class GenRandom {
             for (int i = 0; i <numberOfRecords; i++) {
                 double record1 = R.nextDouble(ConstValues.minRangeRecord,ConstValues.maxRangeRecord);
                 double record2 = R.nextDouble(ConstValues.minRangeRecord,ConstValues.maxRangeRecord);
-                record1 = Math.round(record1 * 100.0) / 100.0;
-                record2 = Math.round(record2 * 100.0) / 100.0;
+                String r1 = String.format(Locale.US, "%05.2f", record1);
+                String r2 = String.format(Locale.US, "%05.2f", record2);
                 myFile.write(record1 + ";" + record2 + "\n");
             }
             myFile.close();
