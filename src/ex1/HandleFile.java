@@ -11,10 +11,12 @@ public class HandleFile implements RecordIO {
     private int blockSize;
     private BufferedInputStream bInStream;
     private BufferedOutputStream bOutStream;
-    private String inputBlock = "";
+    private byte[] readBlockBuffer;
+    private int readPosition = 0;
+    private int readValidBytes = 0;
+    private boolean EOF = false;
     private byte[] writeBlockBuffer;
-    private int writePos = 0;
-    private Boolean EOF = false;
+    private int writePosition = 0;
 
 
 
@@ -26,53 +28,102 @@ public class HandleFile implements RecordIO {
     public HandleFile(String fileName, int blockSize) {
         this.fileName = fileName;
         this.blockSize = blockSize;
-        this.writePos = 0;
     }
 
+    //### READ ####
 
-
+    @Override
     public void openToRead() throws IOException {
         bInStream = new BufferedInputStream(new FileInputStream(fileName));
+        readBlockBuffer = new byte[blockSize];
+        loadNextBlock();
     }
 
-    public void openToWrite() throws IOException {
-        bOutStream = new BufferedOutputStream(new FileOutputStream(fileName));
-        writeBlockBuffer = new byte[blockSize];
+    private void loadNextBlock() throws IOException {
+        if(EOF)
+            return;
+        readValidBytes = bInStream.read(readBlockBuffer);
+
+        if(readValidBytes == -1){
+            EOF = true;
+            readValidBytes = 0;
+        } else {
+            Statistic.incrementReadBlocksCounter();
+        }
+
+        readPosition = 0;
     }
 
     @Override
-    public Record readRecord() throws IOException {
-        if (EOF) return null;
-        StringBuilder lineBuilder = new StringBuilder(inputBlock);
+    public Record readRecord() throws IOException{
+        if(EOF && readValidBytes <= readPosition)
+            return null;
 
-        byte[] buffer = new byte[blockSize]; //create buffer to read chunks of input
-        int bytesRead;
-        while (true) {
-            int newlinePos = lineBuilder.indexOf("\n");  // find position of new line, last element od record
-            if (newlinePos >= 0) {  // record exist before new line
-                String line = lineBuilder.substring(0, newlinePos).trim(); // extract record and remove white spaces
-                inputBlock = lineBuilder.substring(newlinePos + 1); // save rest of input, without first record
-                if (!line.isEmpty())  // if in line is record return it, else read next chunk
-                    return new Record(line);
+        StringBuilder sb = new StringBuilder();
+
+        while(true){
+            if(readPosition >= readValidBytes){
+                loadNextBlock();
+                if(EOF && readValidBytes == 0){
+                    if(sb.length() > 0){
+                        return new Record(sb.toString());
+                    }
+                    return null;
+                }
             }
 
-            bytesRead = bInStream.read(buffer); // read chunk of input
-            if(bytesRead != -1)
-            {
+            char oneChar = (char) readBlockBuffer[readPosition];
+            readPosition++;
 
-                Statistic.incrementReadBlocksCounter();
-                lineBuilder.append(new String(buffer, 0, bytesRead, StandardCharsets.UTF_8)); // add readed chunk to lineBuilder
-            }else { // if not read data
-                EOF = true;
-                if (lineBuilder.length() == 0) // if there are not and record in memory
-                    return null;
-                String last = lineBuilder.toString().trim();
-                if (!last.isEmpty())
-                    return new Record(last);
-                return null;
+            if(oneChar == '\n'){
+                return new Record(sb.toString());
+            }
+
+            if (oneChar != '\r') {
+                sb.append(oneChar);
             }
         }
     }
+
+    //### WRITE ###
+
+    @Override
+    public void openToWrite() throws IOException {
+        bOutStream = new BufferedOutputStream(new FileOutputStream(fileName));
+        writeBlockBuffer = new byte[blockSize];
+        writePosition = 0;
+    }
+
+    @Override
+    public void writeRecord(Record record) throws IOException {
+        String line = record.toString() + "\n";
+        byte[] data = line.getBytes(StandardCharsets.UTF_8);
+
+        int offset = 0;
+
+        while(offset < data.length){
+            int leftSpace = blockSize - writePosition;
+            int toCopy = Math.min(leftSpace, data.length - offset);
+
+            System.arraycopy(data, offset, writeBlockBuffer, writePosition, toCopy);
+
+            offset += toCopy;
+            writePosition += toCopy;
+
+            if(writePosition == blockSize){
+                executeWriteBlock();
+            }
+        }
+    }
+
+    private void executeWriteBlock() throws IOException {
+        if(writePosition > 0){
+            bOutStream.write(writeBlockBuffer, 0, writePosition);
+            Statistic.incrementWriteBlocksCounter();
+            writePosition = 0;
+        }
+    }
+
 
     @Override
     public void writeRun(List<Record> records, int runIndex) throws IOException {
@@ -85,37 +136,12 @@ public class HandleFile implements RecordIO {
         runFile.close();
     }
 
-    private void writeBlock() throws IOException {
-        if (writePos == 0) return;
 
-        bOutStream.write(writeBlockBuffer, 0, writePos);
-        Statistic.incrementWriteBlocksCounter();
-        writePos = 0;
-    }
-
-    @Override
-    public void writeRecord(Record record) throws IOException {
-        String line = record.toString() + "\n";
-        byte[] data = line.getBytes(StandardCharsets.UTF_8);
-
-        if (writePos + data.length > blockSize) {
-            writeBlock();
-        }
-        // z data kopiujemy od elementu 0 do writeBlockBuffer od pozucji writePos ata.lenght elementow
-        System.arraycopy(data, 0, writeBlockBuffer, writePos, data.length);
-        writePos += data.length;
-    }
 
     public boolean deleteFile() {
         // Bezpieczne zamknięcie strumieni, jeśli plik był otwierany
         try {
-            if (bInStream != null) {
-                bInStream.close();
-            }
-            if (bOutStream != null) {
-                writeBlock();   // upewniamy się, że bufor został opróżniony
-                bOutStream.close();
-            }
+            this.close();
         } catch (IOException e) {
             System.err.println("Błąd podczas zamykania strumieni pliku: " + fileName);
             e.printStackTrace();
@@ -142,7 +168,7 @@ public class HandleFile implements RecordIO {
     public void close() throws IOException {
         if (bInStream != null) bInStream.close();
         if (bOutStream != null){
-            writeBlock();
+            executeWriteBlock();
             bOutStream.close();
         }
     }

@@ -16,5 +16,5 @@ public interface RecordIO {
 
     void openToWrite() throws IOException;
 
-    public boolean deleteFile();
+    boolean deleteFile();
 }

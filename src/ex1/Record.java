@@ -38,8 +38,8 @@ public class Record implements Comparable<Record>{
     }
 
     public double getPotential_energy() {
-        return mass*height*ConstValues.g_const;
-        //return potential_energy;
+        //return mass*height*ConstValues.g_const;
+        return mass*height;
     }
 
 

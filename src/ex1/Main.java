@@ -5,6 +5,19 @@ import java.nio.file.*;
 
 
 void main() throws IOException {
+
+    File runsFolder = new File("runs");
+    if (runsFolder.exists() && runsFolder.isDirectory()) {
+        File[] files = runsFolder.listFiles(); // Pobiera pliki z folderu
+
+        if (files != null) { // Upewniamy się, że udało się pobrać listę
+            for (File f : files) {
+                f.delete(); // Usuwa plik
+            }
+        }
+    }
+    Statistic.reset();
+
     int N = ConstValues.numberOfRecord;
     int b = ConstValues.blockingFactor;
     int n = ConstValues.numberOfBuffers;
@@ -34,16 +47,18 @@ void main() throws IOException {
             recordsInByffer.clear();
         }
     }
-
     if(!recordsInByffer.isEmpty()){
         Sort.heapSort(recordsInByffer);
         IO.writeRun(recordsInByffer, runIndex);
         runIndex++;
         recordsInByffer.clear();
     }
+    System.out.println("read block "+Statistic.readBlocksCounter);
+    System.out.println("write block "+Statistic.writeBlocksCounter);
+    System.out.println("theoretical: " + 2*N/b);
     //################# wczytanie danych i stworzenie posortowanych biegow
 
-    File runsFolder = new File("runs");
+    //File runsFolder = new File("runs");
     File[] runsFiles = runsFolder.listFiles();
     //List<File> runslist = Arrays.asList(runsFiles);
     List<RecordIO> runsList = new ArrayList<>(runsFiles.length);
@@ -54,6 +69,7 @@ void main() throws IOException {
 
     while(runsFiles.length > 1){
         for (int i = 0; i < runsList.size(); i += (n - 1)) {
+            Statistic.incrementCycleCounter();
             // the number of runes may not be a multiple of the range
             int lastRun = Math.min(i + (n - 1), runsList.size());
             List<RecordIO> group = runsList.subList(i, lastRun);
@@ -79,6 +95,9 @@ void main() throws IOException {
     double B = N / b;
 
     double expected = 2 * B * (Math.log(B) / Math.log(n));  // log_n(B)
-
+    System.out.println("sum "+(Statistic.writeBlocksCounter+Statistic.readBlocksCounter));
     System.out.println("Expected IO = " + expected);
+
+    System.out.println("cycle " + Statistic.cycleCounter);
+    System.out.println("disk operation stage 2 base on cycle" + Statistic.cycleCounter*2*N/b);
 }

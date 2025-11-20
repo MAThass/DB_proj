@@ -16,7 +16,7 @@ public class GenRandom {
                 double record2 = R.nextDouble(ConstValues.minRangeRecord,ConstValues.maxRangeRecord);
                 String r1 = String.format(Locale.US, "%05.2f", record1);
                 String r2 = String.format(Locale.US, "%05.2f", record2);
-                myFile.write(record1 + ";" + record2 + "\n");
+                myFile.write(r1 + ";" + r2 + "\n");
             }
             myFile.close();
         } catch (IOException e) {

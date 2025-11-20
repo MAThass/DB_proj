@@ -66,58 +66,52 @@ public class Sort {
 
     }
 
-    public static void mergeRuns(List<RecordIO> runsList, int runIndex) throws IOException {
-        RecordIO mergedRun = new HandleFile("runs/run" + runIndex + ".csv");
+    public static void mergeRuns(List<RecordIO> group, int runIndex) throws IOException {
+        RecordIO output = new HandleFile("runs/run" + runIndex + ".csv");
         try {
-            mergedRun.openToWrite();
+            output.openToWrite();
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-        for (RecordIO file : runsList) {
+
+        for (RecordIO file : group) {
             file.openToRead();
         }
 
-        PriorityQueue<Map.Entry<Record, Integer>> minHeap = new PriorityQueue<>(
-                new Comparator<Map.Entry<Record, Integer>>() {
-                    public int compare(Map.Entry<Record, Integer> e1, Map.Entry<Record, Integer> e2) {
-                        // Porównujemy rekordy według klucza (zakładamy, że Record implements Comparable)
-                        return e1.getKey().compareTo(e2.getKey());
-                    }
-                }
-        );
+        PriorityQueue<QueueRcord> minHeap = new PriorityQueue<>(group.size()); //n - 1 or less
+
 
         // Wczytaj pierwszy rekord z każdego pliku wejściowego i dodaj go do kopca
-        for (int i = 0; i < runsList.size(); i++) {
-            Record rec = runsList.get(i).readRecord();
-            if (rec != null) {
+        for (int i = 0; i < group.size(); i++) {
+            Record initialRecord = group.get(i).readRecord();
+            if (initialRecord != null) {
                 // Dodajemy parę (rekord, indeks pliku) do kopca
-                minHeap.add(new AbstractMap.SimpleEntry<>(rec, i));
+                minHeap.add(new QueueRcord(initialRecord,i));
             }
         }
 
         while (!minHeap.isEmpty()) {
             // Pobranie pary (rekord, źródłowy indeks pliku) o najmniejszym rekordzie
-            Map.Entry<Record, Integer> entry = minHeap.poll();
-            Record minRec = entry.getKey();
-            int sourceIdx = entry.getValue();
+            QueueRcord minEntry = minHeap.poll();
 
             // Zapisz najmniejszy rekord do pliku wyjściowego
-            mergedRun.writeRecord(minRec);
+            output.writeRecord(minEntry.record);
 
             // Wczytaj kolejny rekord z tego samego pliku źródłowego
-            Record nextRec = runsList.get(sourceIdx).readRecord();
-            if (nextRec != null) {
+            Record nextRecord = group.get(minEntry.index).readRecord();
+
+            if (nextRecord != null) {
                 // Dodajemy nowy rekord z tego pliku do kopca
-                minHeap.add(new AbstractMap.SimpleEntry<>(nextRec, sourceIdx));
+                minHeap.add(new QueueRcord(nextRecord,minEntry.index));
             }
         }
 
         // Zamknij wszystkie pliki wejściowe oraz plik wyjściowy
-        for (RecordIO file : runsList) {
+        for (RecordIO file : group) {
             file.close();
             file.deleteFile();
         }
-        mergedRun.close();
+        output.close();
 
     }
 
