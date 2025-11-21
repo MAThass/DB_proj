@@ -88,9 +88,9 @@ void main() throws IOException {
 
     System.out.println("read block "+Statistic.readBlocksCounter);
     System.out.println("write block "+Statistic.writeBlocksCounter);
-     N = ConstValues.numberOfRecord;
-     b = ConstValues.blockingFactor;
-     n = ConstValues.numberOfBuffers;
+     //N = ConstValues.numberOfRecord;
+     //b = ConstValues.blockingFactor;
+     //n = ConstValues.numberOfBuffers;
 
     double B = N / b;
 
@@ -99,5 +99,5 @@ void main() throws IOException {
     System.out.println("Expected IO = " + expected);
 
     System.out.println("cycle " + Statistic.cycleCounter);
-    System.out.println("disk operation stage 2 base on cycle" + Statistic.cycleCounter*2*N/b);
+    System.out.println("disk operation stage 2 base on cycle " + Statistic.cycleCounter*2*N/b);
 }
