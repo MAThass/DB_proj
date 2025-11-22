@@ -1,103 +1,93 @@
 import ex1.*;
-import ex1.Record;
+
+import javax.swing.*;
 import java.io.IOException;
-import java.nio.file.*;
+
+private int randomData(){
+    Display.RandomMenu();
+    Scanner sc = new Scanner(System.in);
+    int instruction = sc.nextInt();
+    sc.close();
+    return instruction;
+}
+
+private String dataFromFile(){
+    String fileName = "";
+    Display.FielMenu();
+    JFileChooser chooser = new JFileChooser();
+    chooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+
+    int result = chooser.showOpenDialog(null);
+
+    if (result == JFileChooser.APPROVE_OPTION) {
+        fileName = chooser.getSelectedFile().getAbsolutePath();
+    }
+
+    return fileName;
+}
+
+private void dataFromKeyboard() throws IOException {
+    Scanner sc = new Scanner(System.in);
+    String fileName = "gen.csv";
+    FileWriter myFile = new FileWriter(fileName);
+    while (true) {
+        Display.KeyBoardMenu();
+
+        String input = sc.nextLine();
+        if (input.equalsIgnoreCase("q")) {
+            break;
+        }
+        String[] parts = input.split("\\s+");
+        if (parts.length != 2) {
+            System.out.println("Błędny format");
+            System.out.println("BPoprawny to: masa wysokość");
+            continue;
+        }
+        try {
+            double recordMass = Double.parseDouble(parts[0]);
+            double recordHeight = Double.parseDouble(parts[1]);
+            if(recordMass >= 0 || recordHeight >= 0){
+                myFile.write(recordMass + ";" + recordHeight + "\n");
+            }
+            else{
+                System.out.println("Ponadno wartości ujemne");
+            }
+
+        } catch (NumberFormatException e) {
+            System.out.println("Podane wartości nie są liczbami!");
+        }
+    }
+    myFile.close();
+    sc.close();
+}
 
 
 void main() throws IOException {
-
-    File runsFolder = new File("runs");
-    if (runsFolder.exists() && runsFolder.isDirectory()) {
-        File[] files = runsFolder.listFiles(); // Pobiera pliki z folderu
-
-        if (files != null) { // Upewniamy się, że udało się pobrać listę
-            for (File f : files) {
-                f.delete(); // Usuwa plik
-            }
+    Scanner sc = new Scanner(System.in);
+    int numberOfRecords = 100;
+    String fileName = "gen.csv";
+    LOOP:
+    while (true) {
+        Display.MainMenu();
+        char instruction = sc.next().charAt(0);
+        switch (instruction) {
+            case '1':
+                numberOfRecords = randomData();
+                GenRandom.createFile(numberOfRecords);
+                break LOOP;
+            case '2':
+                fileName = dataFromFile();
+                break LOOP;
+            case '3':
+                dataFromKeyboard();
+                break LOOP;
+            default:
+                Display.IncorrectInputMessage();
         }
     }
-    Statistic.reset();
+    sc.close();
 
-    int N = ConstValues.numberOfRecord;
-    int b = ConstValues.blockingFactor;
-    int n = ConstValues.numberOfBuffers;
-
-    GenRandom.createFile(ConstValues.numberOfRecord);
-    RecordIO IO = new HandleFile("gen.csv");
-    //List<Record> recordList = new ArrayList<>();
-    try {
-        IO.openToRead();
-    } catch (IOException e) {
-        throw new RuntimeException(e);
-    }
-
-
-    int runIndex = 0;
-    List<Record> recordsInByffer = new ArrayList<>(n*b);
-
-    Record record;
-    //#################
-    while ((record = IO.readRecord()) != null) {
-        recordsInByffer.add(record);
-
-        if(recordsInByffer.size() == n*b){
-            Sort.heapSort(recordsInByffer);
-            IO.writeRun(recordsInByffer, runIndex);
-            runIndex++;
-            recordsInByffer.clear();
-        }
-    }
-    if(!recordsInByffer.isEmpty()){
-        Sort.heapSort(recordsInByffer);
-        IO.writeRun(recordsInByffer, runIndex);
-        runIndex++;
-        recordsInByffer.clear();
-    }
-    System.out.println("read block "+Statistic.readBlocksCounter);
-    System.out.println("write block "+Statistic.writeBlocksCounter);
-    System.out.println("theoretical: " + 2*N/b);
-    //################# wczytanie danych i stworzenie posortowanych biegow
-
-    //File runsFolder = new File("runs");
-    File[] runsFiles = runsFolder.listFiles();
-    //List<File> runslist = Arrays.asList(runsFiles);
-    List<RecordIO> runsList = new ArrayList<>(runsFiles.length);
-
-    for (int i = 0; i < runsFiles.length; i++) {
-        runsList.add(new HandleFile(runsFiles[i].getAbsolutePath()));
-    }
-
-    while(runsFiles.length > 1){
-        for (int i = 0; i < runsList.size(); i += (n - 1)) {
-            Statistic.incrementCycleCounter();
-            // the number of runes may not be a multiple of the range
-            int lastRun = Math.min(i + (n - 1), runsList.size());
-            List<RecordIO> group = runsList.subList(i, lastRun);
-            Sort.mergeRuns(group, runIndex);
-            runIndex++;
-            //zapisanie run na dysku ???
-        }
-        runsFiles = runsFolder.listFiles();
-        runsList.clear();
-        for (int i = 0; i < runsFiles.length; i++) {
-            runsList.add(new HandleFile(runsFiles[i].getAbsolutePath()));
-        }
-    }
-
-    IO.close();
-
-    System.out.println("read block "+Statistic.readBlocksCounter);
-    System.out.println("write block "+Statistic.writeBlocksCounter);
-     //N = ConstValues.numberOfRecord;
-     //b = ConstValues.blockingFactor;
-     //n = ConstValues.numberOfBuffers;
-
-    double B = N / b;
-
-    double expected = 2 * B * (Math.log(B) / Math.log(n));  // log_n(B)
-    System.out.println("sum "+(Statistic.writeBlocksCounter+Statistic.readBlocksCounter));
-    System.out.println("Expected IO = " + expected);
-
-    System.out.println("cycle " + Statistic.cycleCounter);
-    System.out.println("disk operation stage 2 base on cycle " + Statistic.cycleCounter*2*N/b);
+    MergingWithLargeBuffers.Merge(fileName);
 }
+
+

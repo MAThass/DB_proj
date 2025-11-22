@@ -37,7 +37,7 @@ public class Record implements Comparable<Record>{
         this.mass = mass;
     }
 
-    public double getPotential_energy() {
+    public double getPotentialEnergy() {
         //return mass*height*ConstValues.g_const;
         return mass*height;
     }
@@ -45,7 +45,7 @@ public class Record implements Comparable<Record>{
 
     @Override
     public int compareTo(Record record) {
-        return Double.compare(this.getPotential_energy(), record.getPotential_energy());
+        return Double.compare(this.getPotentialEnergy(), record.getPotentialEnergy());
     }
 
     @Override
