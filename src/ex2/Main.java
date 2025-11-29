@@ -1,4 +1,4 @@
-import ex1.*;
+import ex2.*;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -90,7 +90,7 @@ void main() throws IOException {
         switch (instruction) {
             case '1':
                 numberOfRecords = randomData();
-                GenRandom.createFile(numberOfRecords);
+                //GenRandom.createFile(numberOfRecords);
                 break LOOP;
             case '2':
                 fileName = dataFromFile();
@@ -106,7 +106,7 @@ void main() throws IOException {
     doPrintRuns();
     sc.close();
 
-    MergingWithLargeBuffers.Merge(fileName);
+    //MergingWithLargeBuffers.Merge(fileName);
 }
 
 

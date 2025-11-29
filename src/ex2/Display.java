@@ -1,12 +1,10 @@
-package ex1;
+package ex2;
+
+import ex1.ConstValues;
+import ex1.Statistic;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 public class Display {

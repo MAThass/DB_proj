@@ -139,27 +139,21 @@ public class HandleFile implements RecordIO {
 
 
     public boolean deleteFile() {
-        // Bezpieczne zamknięcie strumieni, jeśli plik był otwierany
         try {
             this.close();
         } catch (IOException e) {
             System.err.println("Błąd podczas zamykania strumieni pliku: " + fileName);
             e.printStackTrace();
         }
-
         File f = new File(fileName);
-
         if (!f.exists()) {
-            System.out.println("Plik nie istnieje i nie może zostać usunięty: " + fileName);
+            System.out.println("Plik nie istnieje" + fileName);
             return false;
         }
-
         boolean deleted = f.delete();
-
         if (!deleted) {
             System.err.println("Nie udało się usunąć pliku: " + fileName);
         }
-
         return deleted;
     }
 

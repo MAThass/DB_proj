@@ -1,4 +1,4 @@
-package ex1;
+package ex2;
 
 public class ConstValues {
     public static final double g_const = 9.81;
@@ -11,4 +11,9 @@ public class ConstValues {
     public static final boolean printFile = true;
     public static boolean printRuns = true;
     public static final int numberOfLinesToPrint = 500;
+
+
+    public static final int treeDegree = 2;
+    public static final int pageSize = 512;
+    public static final int maxKeys = 1000;
 }

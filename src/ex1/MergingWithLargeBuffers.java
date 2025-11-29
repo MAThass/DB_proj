@@ -10,6 +10,10 @@ public class MergingWithLargeBuffers {
     public static void Merge(String FileName) throws IOException {
         clearRunsFolder();
 
+        if(ConstValues.printFile){
+            Display.printNotSortedFile(FileName);
+        }
+
         int numberOfRecord = 0;
         int b = ConstValues.blockingFactor;
         int n = ConstValues.numberOfBuffers;
@@ -44,7 +48,6 @@ public class MergingWithLargeBuffers {
             runIndex++;
             recordsInByffer.clear();
         }
-       Display.printSumaryStage1();
 
         File runsFolder = new File("runs");
         File[] runsFiles = runsFolder.listFiles();
@@ -56,6 +59,9 @@ public class MergingWithLargeBuffers {
         }
 
         while(runsFiles.length > 1){
+            if(ConstValues.printRuns){
+                Display.printRuns();
+            }
             Statistic.incrementCycleCounter();
             for (int i = 0; i < runsList.size(); i += (n - 1)) {
                 int lastRun = Math.min(i + (n - 1), runsList.size());
@@ -68,9 +74,13 @@ public class MergingWithLargeBuffers {
             for (File runsFile : runsFiles) {
                 runsList.add(new HandleFile(runsFile.getAbsolutePath()));
             }
+
         }
 
         IO.close();
+        if(ConstValues.printFile){
+            Display.printSortedFile();
+        }
         Display.printSumary(numberOfRecord);
     }
 

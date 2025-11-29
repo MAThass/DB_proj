@@ -1,4 +1,4 @@
-package ex1;
+package ex2;
 
 public class Statistic {
     public  static int writeBlocksCounter = 0;

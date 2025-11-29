@@ -23,7 +23,7 @@ public class Sort {
         }
     }
 
-   public static void heapSort(List<Record> recordList){
+    public static void heapSort(List<Record> recordList){
         int length = recordList.size();
 
         heapify(recordList);
