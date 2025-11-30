@@ -7,7 +7,7 @@ public class BPlusTree {
     private HandleIO handleIO;
     private int rootAdrress;
     private double alpha;
-    private int treeDegree = ConstValues.treeDegree;
+    private int treeDegree = ConstValues.TREE_DEGREE;
 
     public BPlusTree(String filename) throws IOException {
         handleIO = new HandleIO(filename);
@@ -35,7 +35,7 @@ public class BPlusTree {
     }
 
     private NodePage loadNode(int pageAddress) throws IOException {
-        byte[] data = new byte[ConstValues.pageSize];
+        byte[] data = new byte[ConstValues.PAGE_SIZE];
         handleIO.readPage(pageAddress, data);
         ByteBuffer buffer = ByteBuffer.wrap(data);
         buffer.position(0);

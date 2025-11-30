@@ -45,6 +45,10 @@ public class Record implements Comparable<Record>{
         return mass*height;
     }
 
+    public int getKey() {
+        return key;
+    }
+
     public void serialize(ByteBuffer buffer) {
         buffer.putInt(this.key);
         buffer.putDouble(this.mass);
@@ -60,7 +64,7 @@ public class Record implements Comparable<Record>{
 
     @Override
     public int compareTo(Record record) {
-        return Double.compare(this.getPotentialEnergy(), record.getPotentialEnergy());
+        return Double.compare(this.getKey(), record.getKey());
     }
 
     @Override

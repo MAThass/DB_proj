@@ -4,12 +4,13 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 public class HandleIO {
-    private String fileName = "file.dat";
-    private int offset = 0;
+    private String fileName;
 
     private RandomAccessFile file;
 
-    public HandleIO() throws IOException {}
+    public HandleIO() throws IOException {
+        fileName = "file.dat";
+    }
     public HandleIO(String fileName) throws IOException {
         this.fileName = fileName;
     }
@@ -24,13 +25,14 @@ public class HandleIO {
     }
 
     public void readPage(int pageAddress, byte[] buffer) throws IOException{
-        offset = pageAddress * ConstValues.pageSize;
+        long offset = (long) pageAddress * ConstValues.PAGE_SIZE;
         file.seek(offset);
         file.read(buffer);
         Statistic.incrementReadBlocksCounter();
     }
 
     public void writePage(int pageAddress, byte[] buffer) throws IOException{
+        long offset = (long) pageAddress * ConstValues.PAGE_SIZE;
         file.seek(offset);
         file.write(buffer);
         //file.write(buffer, offset, ConstValues.pageSize);
@@ -38,6 +40,6 @@ public class HandleIO {
     }
 
     public int allocatePageAddress() throws IOException{
-        return (int)(file.length() / ConstValues.pageSize);
+        return (int)(file.length() / ConstValues.PAGE_SIZE);
     }
 }

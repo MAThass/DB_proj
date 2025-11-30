@@ -1,7 +1,7 @@
-import ex2.*;
+import ex2.ConstValues;
+import ex2.Display;
 
 import javax.swing.*;
-import java.io.IOException;
 
 private int randomData(){
     Display.RandomMenu();
@@ -81,7 +81,7 @@ private void doPrintRuns() throws IOException {
 
 void main() throws IOException {
     Scanner sc = new Scanner(System.in);
-    int numberOfRecords = 100;
+    int numberOfRecords = ConstValues.TREE_DEGREE;
     String fileName = "gen.csv";
     LOOP:
     while (true) {
@@ -108,5 +108,7 @@ void main() throws IOException {
 
     //MergingWithLargeBuffers.Merge(fileName);
 }
+
+
 
 

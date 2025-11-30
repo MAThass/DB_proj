@@ -7,9 +7,8 @@ abstract public class NodePage {
 
     protected  int pageAddress;
     protected  int parentAddress;
-    protected  int numberOfKeys;
+    protected  int numberOfKeys = 0;
     protected boolean isLeaf;
-    protected int[] keys = new int[ConstValues.maxKeys];
 
     protected HandleIO handleIO;
 
@@ -29,9 +28,6 @@ abstract public class NodePage {
     public NodePage(HandleIO handleIO, int pageAddress, ByteBuffer buffer) throws IOException {
         this.handleIO = handleIO;
         this.pageAddress = pageAddress;
-
-//        byte[] data = new byte[ConstValues.pageSize];
-//        handleIO.readPage(pageAddress, data);
         deserializeHeader(buffer);
     }
 
@@ -40,7 +36,6 @@ abstract public class NodePage {
         this.parentAddress = buffer.getInt();
         this.numberOfKeys = buffer.getInt();
         this.isLeaf = buffer.get() == 1;
-        // 3xint + 1 ; 13
     }
 
     public abstract void writeToDisk() throws IOException;

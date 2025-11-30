@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 
 public class LeafNode extends NodePage {
 
-    private Record[] records = new Record[ConstValues.maxKeys];
+    private Record[] records = new Record[ConstValues.MAX_RECORDS];
     private int previousLeafAddress = -1;
     private int nextLeafAddress = -1;
 

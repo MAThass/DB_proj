@@ -13,9 +13,16 @@ public class ConstValues {
     public static final int numberOfLinesToPrint = 500;
 
 
-    public static final int treeDegree = 2;
-    // HEDDDERS 13b
-    public static final int pageSize = 512;
-    public static final int maxKeys = 1000;
-    public static final int maxRecords = 100;
+    public static final int PAGE_SIZE = 512;
+    // HEDDDER 13b, padding to 16B
+    // for internal maxKeys * 4 + ( maxKeys + 1 ) * 4 = maxKeys * 8 + 4 [B] <= pagesizen - 16
+    // for leaf 4 + 4 + maxRecords * 4 + 2 * 8  * maxRecords = 24 * maxRecords + 8 [B] <= pagesize - 16
+    private static final int SIZE_INT = 4;
+    private static final int SIZE_DOUBLE = 8;
+    private static final int SIZE_RECORD = 2 * SIZE_DOUBLE + SIZE_INT;
+    private static final int SIZE_HEADER = 16;
+    public static final int MAX_KEYS = (PAGE_SIZE - SIZE_HEADER - SIZE_INT) / (2 * SIZE_INT);
+    public static final int MAX_RECORDS = (PAGE_SIZE - SIZE_HEADER - 2 * SIZE_INT) / SIZE_RECORD;
+
+    public static final int TREE_DEGREE = Math.max(MAX_KEYS, MAX_RECORDS) / 2;
 }
