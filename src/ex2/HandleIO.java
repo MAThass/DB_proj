@@ -37,7 +37,7 @@ public class HandleIO {
         Statistic.incrementWriteBlocksCounter();
     }
 
-    public int allocatePage() throws IOException{
+    public int allocatePageAddress() throws IOException{
         return (int)(file.length() / ConstValues.pageSize);
     }
 }

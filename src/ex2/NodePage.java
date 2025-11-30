@@ -19,20 +19,20 @@ abstract public class NodePage {
 
     public NodePage(HandleIO handleIO, int parentAddress, boolean isLeaf) throws IOException {
         this.handleIO = handleIO;
-        this.pageAddress = handleIO.allocatePage();
+        this.pageAddress = handleIO.allocatePageAddress();
         this.parentAddress = parentAddress;
         this.isLeaf = isLeaf;
         this.numberOfKeys = 0;
-        writeToDisk();
+       // writeToDisk();
     }
 
-    public NodePage(HandleIO handleIO, int pageAddress) throws IOException {
+    public NodePage(HandleIO handleIO, int pageAddress, ByteBuffer buffer) throws IOException {
         this.handleIO = handleIO;
         this.pageAddress = pageAddress;
 
-        byte[] data = new byte[ConstValues.pageSize];
-        handleIO.readPage(pageAddress, data);
-        deserializeHeader(ByteBuffer.wrap(data));
+//        byte[] data = new byte[ConstValues.pageSize];
+//        handleIO.readPage(pageAddress, data);
+        deserializeHeader(buffer);
     }
 
     private void deserializeHeader(ByteBuffer buffer) throws IOException {
@@ -40,6 +40,7 @@ abstract public class NodePage {
         this.parentAddress = buffer.getInt();
         this.numberOfKeys = buffer.getInt();
         this.isLeaf = buffer.get() == 1;
+        // 3xint + 1 ; 13
     }
 
     public abstract void writeToDisk() throws IOException;

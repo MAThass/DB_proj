@@ -14,6 +14,8 @@ public class ConstValues {
 
 
     public static final int treeDegree = 2;
+    // HEDDDERS 13b
     public static final int pageSize = 512;
     public static final int maxKeys = 1000;
+    public static final int maxRecords = 100;
 }

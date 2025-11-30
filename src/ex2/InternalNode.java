@@ -5,10 +5,17 @@ import java.nio.ByteBuffer;
 
 public class InternalNode extends NodePage{
 
-    int[] childrenAddresses;
+    int[] childrenAddresses = new int[ConstValues.maxKeys + 1];
 
-    public InternalNode(HandleIO handleIO, int parentAddress, ByteBuffer buffer) throws IOException {
-        super(handleIO, parentAddress);
+    public InternalNode(HandleIO handleIO, int pageAddress, ByteBuffer buffer) throws IOException {
+        super(handleIO, pageAddress, buffer);
+    }
+
+    // Konieczny konstruktor do tworzenia NOWEGO węzła wewnętrznego
+    public InternalNode(HandleIO handleIO, int parentAddress, boolean isLeaf) throws IOException {
+        super(handleIO, parentAddress, isLeaf);
+        // Po super() węzeł ma już przydzielony nowy pageAddress
+        writeToDisk(); // Zapisz pusty węzeł
     }
 
     @Override

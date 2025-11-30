@@ -1,6 +1,5 @@
 package ex2;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -13,13 +12,13 @@ public class BPlusTree {
     public BPlusTree(String filename) throws IOException {
         handleIO = new HandleIO(filename);
         handleIO.open();
-        rootAdrress = handleIO.allocatePage();
+        rootAdrress = handleIO.allocatePageAddress();
     }
 
     public BPlusTree(String filename, int treeDegree ) throws IOException {
         handleIO = new HandleIO(filename);
         handleIO.open();
-        rootAdrress = handleIO.allocatePage();
+        rootAdrress = handleIO.allocatePageAddress();
         this.treeDegree = treeDegree;
     }
 

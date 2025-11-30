@@ -6,10 +6,17 @@ import java.nio.ByteBuffer;
 
 public class LeafNode extends NodePage {
 
-    Record[] records;
+    private Record[] records = new Record[ConstValues.maxKeys];
+    private int previousLeafAddress = -1;
+    private int nextLeafAddress = -1;
 
-    public LeafNode(HandleIO handleIO, int parentAddress, ByteBuffer buffer) throws IOException {
-        super(handleIO, parentAddress);
+    public LeafNode(HandleIO handleIO, int pageAddress, ByteBuffer buffer) throws IOException {
+        super(handleIO, pageAddress, buffer);
+    }
+
+    public LeafNode(HandleIO handleIO, int parentAddress, boolean isLeaf) throws IOException {
+        super(handleIO, parentAddress, isLeaf);
+        writeToDisk();
     }
 
     @Override
