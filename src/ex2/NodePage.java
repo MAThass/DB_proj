@@ -28,17 +28,18 @@ abstract public class NodePage {
     public NodePage(HandleIO handleIO, int pageAddress, ByteBuffer buffer) throws IOException {
         this.handleIO = handleIO;
         this.pageAddress = pageAddress;
-        deserializeHeader(buffer);
+        deserialize(buffer);
     }
 
-    private void deserializeHeader(ByteBuffer buffer) throws IOException {
+    protected void deserialize(ByteBuffer buffer) throws IOException {
         this.pageAddress = buffer.getInt();
         this.parentAddress = buffer.getInt();
         this.numberOfKeys = buffer.getInt();
         this.isLeaf = buffer.get() == 1;
     }
 
-    public abstract void writeToDisk() throws IOException;
+    public abstract void serialize() throws IOException;
+
 
     public abstract NodePage insert(Record record) throws IOException;
 

@@ -21,8 +21,8 @@ public class ConstValues {
     private static final int SIZE_DOUBLE = 8;
     private static final int SIZE_RECORD = 2 * SIZE_DOUBLE + SIZE_INT;
     private static final int SIZE_HEADER = 16;
-    public static final int MAX_KEYS = (PAGE_SIZE - SIZE_HEADER - SIZE_INT) / (2 * SIZE_INT);
-    public static final int MAX_RECORDS = (PAGE_SIZE - SIZE_HEADER - 2 * SIZE_INT) / SIZE_RECORD;
+    public static final int MAX_INTERNAL_KEYS = (PAGE_SIZE - SIZE_HEADER - SIZE_INT) / (2 * SIZE_INT);
+    public static final int MAX_LEAF_KEYS = (PAGE_SIZE - SIZE_HEADER - 2 * SIZE_INT) / SIZE_RECORD;
 
-    public static final int TREE_DEGREE = Math.max(MAX_KEYS, MAX_RECORDS) / 2;
+    public static final int TREE_DEGREE = Math.max(MAX_INTERNAL_KEYS, MAX_LEAF_KEYS) / 2;
 }

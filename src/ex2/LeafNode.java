@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 
 public class LeafNode extends NodePage {
 
-    private Record[] records = new Record[ConstValues.MAX_RECORDS];
+    private Record[] records = new Record[ConstValues.MAX_LEAF_KEYS];
     private int previousLeafAddress = -1;
     private int nextLeafAddress = -1;
 
@@ -16,11 +16,18 @@ public class LeafNode extends NodePage {
 
     public LeafNode(HandleIO handleIO, int parentAddress, boolean isLeaf) throws IOException {
         super(handleIO, parentAddress, isLeaf);
-        writeToDisk();
+        //writeToDisk();
     }
 
     @Override
-    public void writeToDisk() throws IOException {
+    protected void deserialize(ByteBuffer buffer) throws IOException {
+        for(int i = 0; i < this.numberOfKeys; i++) {
+            records[i] = Record.deserialize(buffer);
+        }
+    }
+
+    @Override
+    public void serialize() throws IOException {
 
     }
 
