@@ -21,7 +21,8 @@ public class InternalNode extends NodePage{
     }
 
     @Override
-    protected void deserialize(ByteBuffer buffer){
+    public void deserialize(ByteBuffer buffer) throws IOException{
+        super.deserialize(buffer);
         for( int i = 0; i < this.numberOfKeys; i++ ) {
             childrenAddresses[numberOfKeys] = buffer.getInt();
             keys[numberOfKeys] = buffer.getInt();
@@ -30,8 +31,13 @@ public class InternalNode extends NodePage{
     }
 
     @Override
-    public void serialize() throws IOException {
-
+    public void serialize(ByteBuffer buffer) throws IOException {
+        super.serialize(buffer);
+        for( int i = 0; i < this.numberOfKeys; i++ ) {
+            buffer.putInt(childrenAddresses[numberOfKeys]);
+            buffer.putInt(keys[numberOfKeys]);
+        }
+        buffer.putInt(childrenAddresses[numberOfKeys]);
     }
 
     @Override
@@ -47,6 +53,18 @@ public class InternalNode extends NodePage{
     @Override
     public Record search(int key) {
         return null;
+    }
+
+    @Override
+    public int searchNode(int key){
+        for( int i = 0; i < this.numberOfKeys; i++ ) {
+            //childrenAddresses[numberOfKeys];
+
+            if(key <= keys[i]){
+                return childrenAddresses[i];
+            }
+        }
+        return childrenAddresses[this.numberOfKeys + 1];
     }
 
     @Override

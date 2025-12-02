@@ -27,7 +27,21 @@ public class BPlusTree {
     }
 
     public Record getRecord(int key) throws IOException {
-        return null;
+        int currentPosition = rootAdrress;
+        NodePage currentNode = loadNode(currentPosition);
+
+        while (true){
+            if(!currentNode.isLeaf){
+                currentPosition = currentNode.searchNode(key);
+                if(currentPosition == -1){
+                    return null;
+                }
+                currentNode = loadNode(currentPosition);
+            }else{
+                return currentNode.search(key);
+            }
+        }
+        //return null;
     }
 
     public void traverseTree() throws IOException {
@@ -39,10 +53,7 @@ public class BPlusTree {
         handleIO.readPage(pageAddress, data);
         ByteBuffer buffer = ByteBuffer.wrap(data);
         buffer.position(0);
-        buffer.getInt();
-        buffer.getInt();
-        buffer.getInt();
-        boolean isLeaf = (buffer.get() == 1);
+        boolean isLeaf = (buffer.getInt() == 1);
         buffer.position(0);
         if (isLeaf) {
             return new LeafNode(handleIO, pageAddress, buffer);

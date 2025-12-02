@@ -7,7 +7,7 @@ import java.util.StringTokenizer;
 public class Record implements Comparable<Record>{
     private double  mass = 0;
     private double height = 0;
-    private int key;
+    private int key = 0;
     //private double potential_energy = 0;
 
     public Record(int key,double mass, double height) {
@@ -61,6 +61,7 @@ public class Record implements Comparable<Record>{
         double height = buffer.getDouble();
         return new Record(key, mass, height);
     }
+
 
     @Override
     public int compareTo(Record record) {

@@ -31,14 +31,20 @@ abstract public class NodePage {
         deserialize(buffer);
     }
 
-    protected void deserialize(ByteBuffer buffer) throws IOException {
-        this.pageAddress = buffer.getInt();
+    public void deserialize(ByteBuffer buffer) throws IOException {
+        this.isLeaf = buffer.getInt() == 1;
+        //this.pageAddress = buffer.getInt();
         this.parentAddress = buffer.getInt();
         this.numberOfKeys = buffer.getInt();
-        this.isLeaf = buffer.get() == 1;
     }
 
-    public abstract void serialize() throws IOException;
+    public void serialize(ByteBuffer buffer) throws IOException {
+        buffer.putInt(this.isLeaf ? 1 : 0);
+        //buffer.putInt(this.pageAddress);
+        buffer.putInt(this.parentAddress);
+        buffer.putInt(this.numberOfKeys);
+
+    }
 
 
     public abstract NodePage insert(Record record) throws IOException;
@@ -46,6 +52,7 @@ abstract public class NodePage {
     public abstract NodePage split() throws IOException;
 
     public abstract Record search(int key);
+    public abstract int searchNode(int key);
 
     public abstract String displayContent();
 }

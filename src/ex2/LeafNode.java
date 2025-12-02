@@ -20,15 +20,23 @@ public class LeafNode extends NodePage {
     }
 
     @Override
-    protected void deserialize(ByteBuffer buffer) throws IOException {
+    public void deserialize(ByteBuffer buffer) throws IOException {
+        super.deserialize(buffer);
+        this.previousLeafAddress = buffer.getInt();
+        this.nextLeafAddress = buffer.getInt();
         for(int i = 0; i < this.numberOfKeys; i++) {
             records[i] = Record.deserialize(buffer);
         }
     }
 
     @Override
-    public void serialize() throws IOException {
-
+    public void serialize(ByteBuffer buffer) throws IOException {
+        super.serialize(buffer);
+        buffer.putInt(this.previousLeafAddress);
+        buffer.putInt(this.nextLeafAddress);
+        for(int i = 0; i < this.numberOfKeys; i++) {
+            records[i].serialize(buffer);
+        }
     }
 
     @Override
@@ -43,7 +51,17 @@ public class LeafNode extends NodePage {
 
     @Override
     public Record search(int key) {
+        for(int i = 0; i < this.numberOfKeys; i++){
+            if( key == records[i].getKey()){
+                return records[i];
+            }
+        }
         return null;
+    }
+
+    @Override
+    public int searchNode(int key){
+        return -1;
     }
 
     @Override

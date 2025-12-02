@@ -17,10 +17,10 @@ public class ConstValues {
     // HEDDDER 13b, padding to 16B
     // for internal maxKeys * 4 + ( maxKeys + 1 ) * 4 = maxKeys * 8 + 4 [B] <= pagesizen - 16
     // for leaf 4 + 4 + maxRecords * 4 + 2 * 8  * maxRecords = 24 * maxRecords + 8 [B] <= pagesize - 16
-    private static final int SIZE_INT = 4;
-    private static final int SIZE_DOUBLE = 8;
+    private static final int SIZE_INT = Integer.SIZE;
+    private static final int SIZE_DOUBLE = Double.SIZE;
     private static final int SIZE_RECORD = 2 * SIZE_DOUBLE + SIZE_INT;
-    private static final int SIZE_HEADER = 16;
+    private static final int SIZE_HEADER = 4 * SIZE_INT;
     public static final int MAX_INTERNAL_KEYS = (PAGE_SIZE - SIZE_HEADER - SIZE_INT) / (2 * SIZE_INT);
     public static final int MAX_LEAF_KEYS = (PAGE_SIZE - SIZE_HEADER - 2 * SIZE_INT) / SIZE_RECORD;
 
