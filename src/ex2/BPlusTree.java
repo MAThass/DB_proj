@@ -23,25 +23,21 @@ public class BPlusTree {
     }
 
     public void insertRecord(Record record) throws IOException {
+        LeafNode leafNode = findLeafNode(record.getKey());
+        try{
+            leafNode.insert(record);
+        }catch(IOException e){
 
+        }
     }
 
+    // return null when do not find key
     public Record getRecord(int key) throws IOException {
-        int currentPosition = rootAdrress;
-        NodePage currentNode = loadNode(currentPosition);
-
-        while (true){
-            if(!currentNode.isLeaf){
-                currentPosition = currentNode.searchNode(key);
-                if(currentPosition == -1){
-                    return null;
-                }
-                currentNode = loadNode(currentPosition);
-            }else{
-                return currentNode.search(key);
-            }
+        LeafNode leafNode = findLeafNode(key);
+        if (leafNode == null) {
+            return null;
         }
-        //return null;
+        return leafNode.search(key);
     }
 
     public void traverseTree() throws IOException {
@@ -62,10 +58,24 @@ public class BPlusTree {
     }
 
     private LeafNode findLeafNode(int key) throws IOException {
-        return null;
+        int currentAdrress = rootAdrress;
+        NodePage currentNode = loadNode(currentAdrress);
+
+        while (true){
+            if(currentNode.isLeaf){
+                return (LeafNode) currentNode;
+            }
+            currentAdrress = currentNode.searchNode(key);
+            currentNode = loadNode(currentAdrress);
+        }
+        //return null;
     }
 
     private void handleRootSplit(NodePage oldRoot, NodePage newRoot, int promotedKey) throws IOException {
+
+    }
+
+    private void handleLeafSplit() throws IOException{
 
     }
 

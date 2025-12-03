@@ -30,6 +30,14 @@ public class LeafNode extends NodePage {
     }
 
     @Override
+    public void writeToDisk() throws IOException {
+        byte[] data = new byte[ConstValues.PAGE_SIZE];
+        ByteBuffer buffer = ByteBuffer.wrap(data);
+        this.serialize(buffer);
+        handleIO.writePage(pageAddress, data);
+    }
+
+    @Override
     public void serialize(ByteBuffer buffer) throws IOException {
         super.serialize(buffer);
         buffer.putInt(this.previousLeafAddress);
@@ -40,21 +48,48 @@ public class LeafNode extends NodePage {
     }
 
     @Override
-    public NodePage insert(Record record) throws IOException {
-        return null;
+    public void insert(Record record) throws IOException {
+        if(numberOfKeys >= ConstValues.MAX_LEAF_KEYS ) {
+            throw new IOException("Overflow leaf");
+        }
+
+        int insertIndex = numberOfKeys;
+        for (int i = numberOfKeys - 1; i >= 0; i--) {
+            if (records[i].getKey() > record.getKey()) {
+                records[i + 1] = records[i];
+                insertIndex = i;
+            } else {
+                break;
+            }
+        }
+
+        records[insertIndex] = record;
+        numberOfKeys++;
+        this.writeToDisk();
     }
 
     @Override
     public NodePage split() throws IOException {
+
         return null;
     }
 
     @Override
     public Record search(int key) {
-        for(int i = 0; i < this.numberOfKeys; i++){
-            if( key == records[i].getKey()){
-                return records[i];
+        int L = 0;
+        int R = this.numberOfKeys - 1;
+        int S ;
+        while(L <= R){
+            S = ( L + R ) / 2;
+            if(records[S].getKey() < key){
+                L = S + 1;
             }
+            else if(records[S].getKey() > key){
+                R = S - 1;
+            }else {
+                return records[S];
+            }
+
         }
         return null;
     }

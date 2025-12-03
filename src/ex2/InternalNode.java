@@ -41,8 +41,16 @@ public class InternalNode extends NodePage{
     }
 
     @Override
-    public NodePage insert(Record record) throws IOException {
-        return null;
+    public void writeToDisk() throws IOException {
+        byte[] data = new byte[ConstValues.PAGE_SIZE];
+        ByteBuffer buffer = ByteBuffer.wrap(data);
+        this.serialize(buffer);
+        handleIO.writePage(pageAddress, data);
+    }
+
+    @Override
+    public void insert(Record record) throws IOException {
+
     }
 
     @Override
@@ -57,14 +65,19 @@ public class InternalNode extends NodePage{
 
     @Override
     public int searchNode(int key){
-        for( int i = 0; i < this.numberOfKeys; i++ ) {
-            //childrenAddresses[numberOfKeys];
-
-            if(key <= keys[i]){
-                return childrenAddresses[i];
+        int L = 0;
+        int R = this.numberOfKeys - 1;
+        int searchedIndex = this.numberOfKeys;
+        while(L <= R) {
+            int S = (L + R) / 2;
+            if (keys[S] >= key) {
+                searchedIndex = S;
+                R = S - 1;
+            } else {
+                L = S + 1;
             }
         }
-        return childrenAddresses[this.numberOfKeys + 1];
+        return childrenAddresses[searchedIndex];
     }
 
     @Override

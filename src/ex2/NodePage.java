@@ -46,8 +46,8 @@ abstract public class NodePage {
 
     }
 
-
-    public abstract NodePage insert(Record record) throws IOException;
+    public abstract void writeToDisk() throws IOException;
+    public abstract void insert(Record record) throws IOException;
 
     public abstract NodePage split() throws IOException;
 
