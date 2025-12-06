@@ -27,7 +27,7 @@ public class BPlusTree {
         try{
             leafNode.insert(record);
         }catch(IOException e){
-
+            handleLeafSplit(leafNode.parentAddress);
         }
     }
 
@@ -75,7 +75,11 @@ public class BPlusTree {
 
     }
 
-    private void handleLeafSplit() throws IOException{
+    private void handleLeafSplit(int nodeAddress) throws IOException{
+        InternalNode node = (InternalNode) loadNode(nodeAddress);
+    }
+
+    private void handleInternalNode() throws IOException{
 
     }
 
