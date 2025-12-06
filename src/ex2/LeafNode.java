@@ -3,10 +3,11 @@ package ex2;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class LeafNode extends NodePage {
 
-    private Record[] records = new Record[ConstValues.MAX_LEAF_KEYS];
+    private Record[] records = new Record[ConstValues.MAX_LEAF_KEYS + 1]; // + 1 to handle overflow
     private int previousLeafAddress = -1;
     private int nextLeafAddress = -1;
 
@@ -49,10 +50,6 @@ public class LeafNode extends NodePage {
 
     @Override
     public void insert(Record record) throws IOException {
-        if(numberOfKeys >= ConstValues.MAX_LEAF_KEYS ) {
-            throw new IOException("Overflow leaf");
-        }
-
         int insertIndex = numberOfKeys;
         for (int i = numberOfKeys - 1; i >= 0; i--) {
             if (records[i].getKey() > record.getKey()) {
@@ -65,11 +62,17 @@ public class LeafNode extends NodePage {
 
         records[insertIndex] = record;
         numberOfKeys++;
+        if(numberOfKeys > ConstValues.MAX_LEAF_KEYS ) {
+            throw new IOException("Overflow leaf");
+        }
         this.writeToDisk();
     }
 
     @Override
     public NodePage split() throws IOException {
+        int recordNumber = (ConstValues.MAX_LEAF_KEYS + 1) / 2;
+        Record[] newRecords = Arrays.copyOfRange(records,0, recordNumber);
+        records = Arrays.copyOf(newRecords, newRecords.length);
 
         return null;
     }
