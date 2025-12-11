@@ -22,7 +22,14 @@ abstract public class NodePage {
         this.parentAddress = parentAddress;
         this.isLeaf = isLeaf;
         this.numberOfKeys = 0;
-       // writeToDisk();
+    }
+
+    public NodePage(HandleIO handleIO, int pageAddress, int parentAddress) throws IOException {
+        this.handleIO = handleIO;
+        this.pageAddress = handleIO.allocatePageAddress();
+        this.parentAddress = parentAddress;
+        this.pageAddress = pageAddress;
+        this.numberOfKeys = 0;
     }
 
     public NodePage(HandleIO handleIO, int pageAddress, ByteBuffer buffer) throws IOException {
@@ -47,7 +54,7 @@ abstract public class NodePage {
     }
 
     public abstract void writeToDisk() throws IOException;
-    public abstract void insert(Record record) throws IOException;
+    //public abstract void insert(Record record) throws IOException;
 
     public abstract NodePage split() throws IOException;
 

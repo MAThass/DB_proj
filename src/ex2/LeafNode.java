@@ -7,26 +7,31 @@ import java.util.Arrays;
 
 public class LeafNode extends NodePage {
 
-    private Record[] records = new Record[ConstValues.MAX_LEAF_KEYS + 1]; // + 1 to handle overflow
-    private int previousLeafAddress = -1;
-    private int nextLeafAddress = -1;
+    public Record[] records = new Record[ConstValues.MAX_LEAF_KEYS + 1]; // + 1 to handle overflow
+    public int previousLeafAddress = -1;
+    public int nextLeafAddress = -1;
 
     public LeafNode(HandleIO handleIO, int pageAddress, ByteBuffer buffer) throws IOException {
         super(handleIO, pageAddress, buffer);
+        //deserialize(buffer);
     }
 
     public LeafNode(HandleIO handleIO, int parentAddress, boolean isLeaf) throws IOException {
         super(handleIO, parentAddress, isLeaf);
-        //writeToDisk();
+        this.previousLeafAddress = -1;
+        this.nextLeafAddress = -1;
     }
 
     @Override
     public void deserialize(ByteBuffer buffer) throws IOException {
         super.deserialize(buffer);
+        records = new Record[ConstValues.MAX_LEAF_KEYS + 1];
         this.previousLeafAddress = buffer.getInt();
         this.nextLeafAddress = buffer.getInt();
         for(int i = 0; i < this.numberOfKeys; i++) {
             records[i] = Record.deserialize(buffer);
+            //records[i].deserialize(buffer);
+
         }
     }
 
@@ -48,7 +53,7 @@ public class LeafNode extends NodePage {
         }
     }
 
-    @Override
+    //@Override
     public void insert(Record record) throws IOException {
         int insertIndex = numberOfKeys;
         for (int i = numberOfKeys - 1; i >= 0; i--) {
@@ -71,10 +76,25 @@ public class LeafNode extends NodePage {
     @Override
     public NodePage split() throws IOException {
         int recordNumber = (ConstValues.MAX_LEAF_KEYS + 1) / 2;
-        Record[] newRecords = Arrays.copyOfRange(records,0, recordNumber);
-        records = Arrays.copyOf(newRecords, newRecords.length);
 
-        return null;
+        LeafNode newLeafNode = new LeafNode(handleIO, handleIO.allocatePageAddress(), true);
+
+        newLeafNode.records = Arrays.copyOfRange(records, recordNumber, records.length); //0, recordNumber);
+        newLeafNode.numberOfKeys = recordNumber;
+        records = Arrays.copyOf(records, recordNumber);
+        numberOfKeys = records.length;
+
+        int oldNextAddress = this.nextLeafAddress;
+        this.nextLeafAddress = newLeafNode.pageAddress;
+        newLeafNode.previousLeafAddress = this.pageAddress;
+        newLeafNode.nextLeafAddress = oldNextAddress;
+        if (oldNextAddress != -1) {}
+
+        this.writeToDisk();
+
+        newLeafNode.writeToDisk();
+
+        return newLeafNode;
     }
 
     @Override

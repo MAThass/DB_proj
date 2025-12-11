@@ -62,6 +62,12 @@ public class Record implements Comparable<Record>{
         return new Record(key, mass, height);
     }
 
+//    public void deserialize(ByteBuffer buffer){
+//        this.key = buffer.getInt();
+//        this.mass = buffer.getDouble();
+//        this.height = buffer.getDouble();
+//    }
+
 
     @Override
     public int compareTo(Record record) {
@@ -72,6 +78,6 @@ public class Record implements Comparable<Record>{
     public String toString(){
         String m = String.format(Locale.US, "%05.2f", mass);
         String h = String.format(Locale.US, "%05.2f", height);
-        return (m + ";" + h);
+        return (key + ":" + m + ";" + h);
     }
 }
