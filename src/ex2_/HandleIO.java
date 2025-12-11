@@ -1,4 +1,7 @@
-package ex2;
+package ex2_;
+
+import ex2.ConstValues;
+import ex2.Statistic;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
