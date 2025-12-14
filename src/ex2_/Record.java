@@ -1,5 +1,6 @@
 package ex2_;
 
+import java.nio.ByteBuffer;
 import java.util.Locale;
 
 class Record {
@@ -11,15 +12,6 @@ class Record {
         this.mass = mass;
         this.height = height;
         this.key = key;
-    }
-
-    public Record(String line) {
-        String[] parts = line.split(";");
-        mass = Double.parseDouble(parts[0]);
-        height = Double.parseDouble(parts[1]);
-        if (parts.length > 2) {
-            key = Integer.parseInt(parts[2]);
-        }
     }
 
     public double getHeight() {
@@ -50,10 +42,31 @@ class Record {
         return mass * height;
     }
 
+    public byte[] serialize() {
+        ByteBuffer buffer = ByteBuffer.allocate(20);
+        buffer.putInt(key);
+        buffer.putDouble(mass);
+        buffer.putDouble(height);
+        return buffer.array();
+    }
+
+    // Deserialize record from bytes
+    public static Record deserialize(byte[] data, int offset) {
+        ByteBuffer buffer = ByteBuffer.wrap(data, offset, 20);
+        int key = buffer.getInt();
+        double mass = buffer.getDouble();
+        double height = buffer.getDouble();
+        return new Record(mass, height, key);
+    }
+
+    public static int getSerializedSize() {
+        return 20; // 4 + 8 + 8 bytes
+    }
+
     @Override
     public String toString() {
-        String m = String.format(Locale.US, "%05.2f", mass);
-        String h = String.format(Locale.US, "%05.2f", height);
+        String m = Double.toString(mass);
+        String h = Double.toString(height);
         return String.format("Key=%d | %s;%s", key, m, h);
     }
 }

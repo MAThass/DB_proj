@@ -1,8 +1,6 @@
 package ex2_;
 
-import ex2.ConstValues;
-import ex2.Statistic;
-
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -34,13 +32,19 @@ public class HandleIO {
     }
 
     public void readPage(int pageAddress, byte[] buffer) throws IOException{
+        readPage(pageAddress, buffer, false);
+    }
+
+    public void readPage(int pageAddress, byte[] buffer, boolean printing) throws IOException{
         long offset = (long) pageAddress * ConstValues.PAGE_SIZE;
         file.seek(offset);
         int bytesRead = file.read(buffer);
         if (bytesRead != ConstValues.PAGE_SIZE) {
             throw new IOException("Incomplete page read: " + bytesRead + " bytes");
         }
-        Statistic.incrementReadBlocksCounter();
+        if(!printing){
+            Statistic.incrementReadBlocksCounter();
+        }
     }
 
     public void writePage(int pageAddress, byte[] buffer) throws IOException{
@@ -51,11 +55,16 @@ public class HandleIO {
         Statistic.incrementWriteBlocksCounter();
     }
 
-    public int allocatePageAddress() throws IOException{
+    public int setPageAddress() throws IOException{
         return (int)(file.length() / ConstValues.PAGE_SIZE);
 //        byte[] emptyPage = new byte[ConstValues.PAGE_SIZE];
 //        int newAddress = (int)(file.length() / ConstValues.PAGE_SIZE);
 //        writePage(newAddress, emptyPage);
 //        return newAddress;
+    }
+
+    public void delete() throws IOException {
+        File file1 = new File(fileName);
+        file1.deleteOnExit();
     }
 }

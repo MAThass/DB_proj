@@ -1,5 +1,6 @@
 package ex2;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -29,6 +30,8 @@ public class HandleIO {
             isOpen = false;
         }
     }
+
+
 
     public void readPage(int pageAddress, byte[] buffer) throws IOException{
         long offset = (long) pageAddress * ConstValues.PAGE_SIZE;
