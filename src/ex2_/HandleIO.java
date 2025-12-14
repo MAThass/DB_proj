@@ -1,6 +1,7 @@
 package ex2_;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -51,20 +52,17 @@ public class HandleIO {
         long offset = (long) pageAddress * ConstValues.PAGE_SIZE;
         file.seek(offset);
         file.write(buffer);
-        //file.write(buffer, offset, ConstValues.pageSize);
         Statistic.incrementWriteBlocksCounter();
     }
 
     public int setPageAddress() throws IOException{
         return (int)(file.length() / ConstValues.PAGE_SIZE);
-//        byte[] emptyPage = new byte[ConstValues.PAGE_SIZE];
-//        int newAddress = (int)(file.length() / ConstValues.PAGE_SIZE);
-//        writePage(newAddress, emptyPage);
-//        return newAddress;
     }
 
     public void delete() throws IOException {
-        File file1 = new File(fileName);
-        file1.deleteOnExit();
+        try (FileWriter fileWriter = new FileWriter(fileName)) {
+        } catch (IOException e) {
+            throw new IOException("błąd podczas czyszczenia pliku: " + fileName, e);
+        }
     }
 }

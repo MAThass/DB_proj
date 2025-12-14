@@ -1,35 +1,31 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
+# Dane wyciągnięte z Twojego pliku (uśrednione wartości przybliżone)
+labels = ['Wyszukiwanie (Search)', 'Wstawianie (Insert)', 'Usuwanie (Delete)']
 
-records = [100,1000, 10000, 100000, 1000000, 10000000, 100000000]
-real_ops = [2, 20,200, 4000, 60000, 600000, 8000000]
-theory_ops = [2, 20,200, 4000, 60000, 600000, 8000000]
+# Dane dla d=2 (N=10000, alpha=50)
+d2_means = [6.1, 11.0, 13.6]
+# Dane dla d=8 (N=10000, alpha=50) - obliczone na podstawie logów z sekcji "d=8"
+d8_means = [4.0, 5.0, 5.0]
 
-plt.figure(figsize=(10,6))
-plt.plot(records, real_ops, marker='o', label="Rzeczywiste operacje")
-plt.plot(records, theory_ops, marker='x', label="Teoretyczne operacje")
-plt.xscale("log")
-plt.yscale("log")
-plt.xlabel("Liczba rekordów (log)")
-plt.ylabel("Operacje dyskowe (log)")
-plt.title("Operacje dyskowe(rzeczywiste oraz teoretyczne) w stosunku do liczby rekordów")
-plt.legend()
-plt.grid(True)
+x = np.arange(len(labels))
+width = 0.35
+
+fig, ax = plt.subplots(figsize=(10, 6))
+rects1 = ax.bar(x - width/2, d2_means, width, label='Stopień d=2', color='#4c72b0')
+rects2 = ax.bar(x + width/2, d8_means, width, label='Stopień d=8', color='#55a868')
+
+ax.set_ylabel('Średnia liczba operacji I/O')
+ax.set_title('Wpływ stopnia drzewa (d) na wydajność operacji (N=10000)')
+ax.set_xticks(x)
+ax.set_xticklabels(labels)
+ax.legend()
+ax.grid(axis='y', linestyle='--', alpha=0.5)
+
+# Dodawanie wartości
+ax.bar_label(rects1, padding=3)
+ax.bar_label(rects2, padding=3)
+
+plt.tight_layout()
 plt.show()
-
-# # New data
-# records = [777777, 8888888]
-# real_ops = [31112, 533334]
-# theory_ops = [31108, 533328]
-#
-# plt.figure(figsize=(10,6))
-# plt.plot(records, real_ops, marker='o', label="Rzeczywiste operacje")
-# plt.plot(records, theory_ops, marker='x', label="Teoretyczne operacje")
-#
-# plt.xlabel("Liczba rekordów (log)")
-# plt.ylabel("Operacje dyskowe (log)")
-# plt.title("Porównanie operacji dyskowych dla danych z rozbieżnościami")
-# plt.legend()
-# plt.grid(True)
-# plt.show()
-

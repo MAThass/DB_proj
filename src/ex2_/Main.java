@@ -4,206 +4,243 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Random;
 import java.util.ArrayList;
-
-
-
-
+import java.util.Scanner;
 
 
 // Main class for testing
 public class Main {
 
     public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
         try {
-            System.out.println("=== B+ Tree Comprehensive Test ===");
-            System.out.println("Insert 20 keys, Delete 5, Insert 10, Update 5\n");
+            System.out.println("  1. manual commands");
+            System.out.println("  2. commands from file");
 
-            BPlusTree tree = new BPlusTree(2, "btree.dat");
-            tree.clearFile();
+            String choice = scanner.nextLine().trim();
 
-            // Phase 1: Insert 20 keys
-            System.out.println("PHASE 1: Insert 20 keys");
-            System.out.println("=".repeat(60));
-            int[] initialKeys = {50, 30, 70, 20, 40, 60, 80, 10, 25, 35,
-                    45, 55, 65, 75, 85, 15, 5, 90, 95, 100};
+            Interface btree = new Interface(ConstValues.d, "btree.dat");
 
-            for (int key : initialKeys) {
-                double mass = key * 0.1;
-                double height = key * 0.5;
-                Record r = new Record(mass, height, key);
-                int read = Statistic.readBlocksCounter;
-                int write = Statistic.writeBlocksCounter;
-                tree.insert(r);
-                System.out.printf("✓ Inserted key=%d (mass=%.1f, height=%.1f)%n",
-                        key, mass, height);
-                System.out.println("total read: " + Statistic.readBlocksCounter + " total write: " + Statistic.writeBlocksCounter);
-                System.out.println("at record read: " + (Statistic.readBlocksCounter - read) + " write " + (Statistic.writeBlocksCounter - write) );
+            if (choice.equals("1")) {
+                btree.runInteractive();
+            } else if (choice.equals("2")) {
+                System.out.print("enter filename: ");
+                String filename = scanner.nextLine().trim();
+                btree.runFromFile(filename);
 
-            }
-
-            System.out.println("\nTree structure after 20 inserts:");
-            tree.printTree();
-
-//            System.out.println("\nAll records after initial inserts:");
-//            tree.printAllRecords();
-
-            // Phase 2: Delete 5 keys
-            System.out.println("\n" + "=".repeat(60));
-            System.out.println("PHASE 2: Delete 5 keys");
-            System.out.println("=".repeat(60));
-            int[] deleteKeys = {25, 45, 65, 85, 95};
-
-            for (int key : deleteKeys) {
-                boolean deleted = tree.delete(key);
-                System.out.printf("%s Deleted key=%d%n",
-                        deleted ? "✓" : "✗", key);
-            }
-
-            System.out.println("\nTree structure after 5 deletions:");
-            tree.printTree();
-
-//            System.out.println("\nRemaining records after deletions:");
-//            tree.printAllRecords();
-
-            // Phase 3: Insert 10 new keys
-            System.out.println("\n" + "=".repeat(60));
-            System.out.println("PHASE 3: Insert 10 new keys");
-            System.out.println("=".repeat(60));
-            int[] newKeys = {12, 18, 22, 28, 32, 38, 42, 48, 52, 58};
-
-            for (int key : newKeys) {
-                double mass = key * 0.12;
-                double height = key * 0.45;
-                Record r = new Record(mass, height, key);
-                tree.insert(r);
-                System.out.printf("✓ Inserted key=%d (mass=%.2f, height=%.2f)%n",
-                        key, mass, height);
-            }
-
-            System.out.println("\nTree structure after 10 new inserts:");
-            tree.printTree();
-
-//            System.out.println("\nAll records after new inserts:");
-//            tree.printAllRecords();
-
-            // Phase 4: Update 5 keys
-            System.out.println("\n" + "=".repeat(60));
-            System.out.println("PHASE 4: Update 5 keys");
-            System.out.println("=".repeat(60));
-
-            // Update: change key and data
-            int[][] updates = {
-                    {10, 11},  // Change key 10 to 11
-                    {30, 33},  // Change key 30 to 33
-                    {50, 51},  // Change key 50 to 51
-                    {70, 72},  // Change key 70 to 72
-                    {90, 92}   // Change key 90 to 92
-            };
-
-            for (int[] update : updates) {
-                int oldKey = update[0];
-                int newKey = update[1];
-                double newMass = newKey * 0.15;
-                double newHeight = newKey * 0.6;
-
-                Record newRecord = new Record(newMass, newHeight, newKey);
-                boolean updated = tree.update(oldKey, newRecord);
-
-                System.out.printf("%s Updated key=%d to key=%d (mass=%.2f, height=%.2f)%n",
-                        updated ? "✓" : "✗", oldKey, newKey, newMass, newHeight);
-            }
-
-            System.out.println("\nTree structure after 5 updates:");
-            tree.printTree();
-
-//            System.out.println("\nAll records after updates:");
-//            tree.printAllRecords();
-
-            // Phase 5: Verification - Search for specific keys
-            System.out.println("\n" + "=".repeat(60));
-            System.out.println("PHASE 5: Verification - Search Operations");
-            System.out.println("=".repeat(60));
-
-            System.out.println("\nSearching for DELETED keys (should not exist):");
-            for (int key : deleteKeys) {
-                Record found = tree.search(key);
-                System.out.printf("%s Key=%d: %s%n",
-                        found == null ? "✓" : "✗",
-                        key,
-                        found == null ? "Not found (correct)" : "ERROR: Still exists!");
-            }
-
-            System.out.println("\nSearching for UPDATED keys (old keys should not exist):");
-            for (int[] update : updates) {
-                int oldKey = update[0];
-                Record found = tree.search(oldKey);
-                System.out.printf("%s Old key=%d: %s%n",
-                        found == null ? "✓" : "✗",
-                        oldKey,
-                        found == null ? "Not found (correct)" : "ERROR: Still exists!");
-            }
-
-            System.out.println("\nSearching for UPDATED keys (new keys should exist):");
-            for (int[] update : updates) {
-                int newKey = update[1];
-                Record found = tree.search(newKey);
-                if (found != null) {
-                    System.out.printf("✓ New key=%d: Found (mass=%f, height=%f)%n",
-                            newKey, found.getMass(), found.getHeight());
-                } else {
-                    System.out.printf("✗ New key=%d: ERROR - Not found!%n", newKey);
+                System.out.print("\ninteractive mode (y/n): ");
+                String response = scanner.nextLine().trim().toLowerCase();
+                if (response.equals("y") || response.equals("yes")) {
+                    btree.runInteractive();
                 }
+            } else {
+                System.out.println("Invalid choice. Exiting.");
             }
 
-            System.out.println("\nSearching for some NEW inserted keys:");
-            int[] checkNewKeys = {12, 28, 42, 58};
-            for (int key : checkNewKeys) {
-                Record found = tree.search(key);
-                if (found != null) {
-                    System.out.printf("✓ Key=%d: Found (mass=%f, height=%f)%n",
-                            key, found.getMass(), found.getHeight());
-                } else {
-                    System.out.printf("✗ Key=%d: ERROR - Not found!%n", key);
-                }
-            }
-
-            // Summary
-            System.out.println("\n" + "=".repeat(60));
-            System.out.println("SUMMARY");
-            System.out.println("=".repeat(60));
-            System.out.println("Operations completed:");
-            System.out.println("  - Inserted 20 initial keys");
-            System.out.println("  - Deleted 5 keys: " + java.util.Arrays.toString(deleteKeys));
-            System.out.println("  - Inserted 10 new keys: " + java.util.Arrays.toString(newKeys));
-            System.out.println("  - Updated 5 keys: 10→11, 30→33, 50→51, 70→72, 90→92");
-            System.out.println("\nExpected total keys: 20 - 5 + 10 = 25");
-
-            // Count actual keys
-            BPlusNode current = tree.readNode(tree.rootAddress);
-            while (!current.isLeaf) {
-                current = tree.readNode(current.childAddresses.get(0));
-            }
-            int actualCount = 0;
-            while (current != null) {
-                actualCount += current.keys.size();
-                if (current.nextAddress != -1) {
-                    current = tree.readNode(current.nextAddress);
-                } else {
-                    break;
-                }
-            }
-            System.out.println("Actual total keys: " + actualCount);
-            System.out.println(actualCount == 25 ? "✓ Count matches!" : "✗ Count mismatch!");
-
-            tree.close();
-
-            System.out.println("\n=== All Tests Completed Successfully ===");
+            btree.close();
+            scanner.close();
 
         } catch (Exception e) {
-            System.err.println("\n✗ Test failed with exception:");
+            System.err.println("Fatal error: " + e.getMessage());
             e.printStackTrace();
         }
     }
+
+    private static String centerText(String text, int width) {
+        int padding = (width - text.length()) / 2;
+        return " ".repeat(padding) + text + " ".repeat(width - text.length() - padding);
+    }
+
+//    public static void main(String[] args) {
+//        try {
+//            System.out.println("=== B+ Tree Comprehensive Test ===");
+//            System.out.println("Insert 20 keys, Delete 5, Insert 10, Update 5\n");
+//
+//            BPlusTree tree = new BPlusTree(2, "btree.dat");
+//            tree.clearFile();
+//
+//            // Phase 1: Insert 20 keys
+//            System.out.println("PHASE 1: Insert 20 keys");
+//            System.out.println("=".repeat(60));
+//            int[] initialKeys = {50, 30, 70, 20, 40, 60, 80, 10, 25, 35,
+//                    45, 55, 65, 75, 85, 15, 5, 90, 95, 100};
+//
+//            for (int key : initialKeys) {
+//                double mass = key * 0.1;
+//                double height = key * 0.5;
+//                Record r = new Record(mass, height, key);
+//                int read = Statistic.readBlocksCounter;
+//                int write = Statistic.writeBlocksCounter;
+//                tree.insert(r);
+//                System.out.printf("✓ Inserted key=%d (mass=%.1f, height=%.1f)%n",
+//                        key, mass, height);
+//                System.out.println("total read: " + Statistic.readBlocksCounter + " total write: " + Statistic.writeBlocksCounter);
+//                System.out.println("at record read: " + (Statistic.readBlocksCounter - read) + " write " + (Statistic.writeBlocksCounter - write) );
+//
+//            }
+//
+//            System.out.println("\nTree structure after 20 inserts:");
+//            tree.printTree();
+//
+////            System.out.println("\nAll records after initial inserts:");
+////            tree.printAllRecords();
+//
+//            // Phase 2: Delete 5 keys
+//            System.out.println("\n" + "=".repeat(60));
+//            System.out.println("PHASE 2: Delete 5 keys");
+//            System.out.println("=".repeat(60));
+//            int[] deleteKeys = {25, 45, 65, 85, 95};
+//
+//            for (int key : deleteKeys) {
+//                boolean deleted = tree.delete(key);
+//                System.out.printf("%s Deleted key=%d%n",
+//                        deleted ? "✓" : "✗", key);
+//            }
+//
+//            System.out.println("\nTree structure after 5 deletions:");
+//            tree.printTree();
+//
+////            System.out.println("\nRemaining records after deletions:");
+////            tree.printAllRecords();
+//
+//            // Phase 3: Insert 10 new keys
+//            System.out.println("\n" + "=".repeat(60));
+//            System.out.println("PHASE 3: Insert 10 new keys");
+//            System.out.println("=".repeat(60));
+//            int[] newKeys = {12, 18, 22, 28, 32, 38, 42, 48, 52, 58};
+//
+//            for (int key : newKeys) {
+//                double mass = key * 0.12;
+//                double height = key * 0.45;
+//                Record r = new Record(mass, height, key);
+//                tree.insert(r);
+//                System.out.printf("✓ Inserted key=%d (mass=%.2f, height=%.2f)%n",
+//                        key, mass, height);
+//            }
+//
+//            System.out.println("\nTree structure after 10 new inserts:");
+//            tree.printTree();
+//
+////            System.out.println("\nAll records after new inserts:");
+////            tree.printAllRecords();
+//
+//            // Phase 4: Update 5 keys
+//            System.out.println("\n" + "=".repeat(60));
+//            System.out.println("PHASE 4: Update 5 keys");
+//            System.out.println("=".repeat(60));
+//
+//            // Update: change key and data
+//            int[][] updates = {
+//                    {10, 11},  // Change key 10 to 11
+//                    {30, 33},  // Change key 30 to 33
+//                    {50, 51},  // Change key 50 to 51
+//                    {70, 72},  // Change key 70 to 72
+//                    {90, 92}   // Change key 90 to 92
+//            };
+//
+//            for (int[] update : updates) {
+//                int oldKey = update[0];
+//                int newKey = update[1];
+//                double newMass = newKey * 0.15;
+//                double newHeight = newKey * 0.6;
+//
+//                Record newRecord = new Record(newMass, newHeight, newKey);
+//                boolean updated = tree.update(oldKey, newRecord);
+//
+//                System.out.printf("%s Updated key=%d to key=%d (mass=%.2f, height=%.2f)%n",
+//                        updated ? "✓" : "✗", oldKey, newKey, newMass, newHeight);
+//            }
+//
+//            System.out.println("\nTree structure after 5 updates:");
+//            tree.printTree();
+//
+////            System.out.println("\nAll records after updates:");
+////            tree.printAllRecords();
+//
+//            // Phase 5: Verification - Search for specific keys
+//            System.out.println("\n" + "=".repeat(60));
+//            System.out.println("PHASE 5: Verification - Search Operations");
+//            System.out.println("=".repeat(60));
+//
+//            System.out.println("\nSearching for DELETED keys (should not exist):");
+//            for (int key : deleteKeys) {
+//                Record found = tree.search(key);
+//                System.out.printf("%s Key=%d: %s%n",
+//                        found == null ? "✓" : "✗",
+//                        key,
+//                        found == null ? "Not found (correct)" : "ERROR: Still exists!");
+//            }
+//
+//            System.out.println("\nSearching for UPDATED keys (old keys should not exist):");
+//            for (int[] update : updates) {
+//                int oldKey = update[0];
+//                Record found = tree.search(oldKey);
+//                System.out.printf("%s Old key=%d: %s%n",
+//                        found == null ? "✓" : "✗",
+//                        oldKey,
+//                        found == null ? "Not found (correct)" : "ERROR: Still exists!");
+//            }
+//
+//            System.out.println("\nSearching for UPDATED keys (new keys should exist):");
+//            for (int[] update : updates) {
+//                int newKey = update[1];
+//                Record found = tree.search(newKey);
+//                if (found != null) {
+//                    System.out.printf("✓ New key=%d: Found (mass=%f, height=%f)%n",
+//                            newKey, found.getMass(), found.getHeight());
+//                } else {
+//                    System.out.printf("✗ New key=%d: ERROR - Not found!%n", newKey);
+//                }
+//            }
+//
+//            System.out.println("\nSearching for some NEW inserted keys:");
+//            int[] checkNewKeys = {12, 28, 42, 58};
+//            for (int key : checkNewKeys) {
+//                Record found = tree.search(key);
+//                if (found != null) {
+//                    System.out.printf("✓ Key=%d: Found (mass=%f, height=%f)%n",
+//                            key, found.getMass(), found.getHeight());
+//                } else {
+//                    System.out.printf("✗ Key=%d: ERROR - Not found!%n", key);
+//                }
+//            }
+//
+//            // Summary
+//            System.out.println("\n" + "=".repeat(60));
+//            System.out.println("SUMMARY");
+//            System.out.println("=".repeat(60));
+//            System.out.println("Operations completed:");
+//            System.out.println("  - Inserted 20 initial keys");
+//            System.out.println("  - Deleted 5 keys: " + java.util.Arrays.toString(deleteKeys));
+//            System.out.println("  - Inserted 10 new keys: " + java.util.Arrays.toString(newKeys));
+//            System.out.println("  - Updated 5 keys: 10→11, 30→33, 50→51, 70→72, 90→92");
+//            System.out.println("\nExpected total keys: 20 - 5 + 10 = 25");
+//
+//            // Count actual keys
+//            BPlusNode current = tree.readNode(tree.rootAddress);
+//            while (!current.isLeaf) {
+//                current = tree.readNode(current.childAddresses.get(0));
+//            }
+//            int actualCount = 0;
+//            while (current != null) {
+//                actualCount += current.keys.size();
+//                if (current.nextAddress != -1) {
+//                    current = tree.readNode(current.nextAddress);
+//                } else {
+//                    break;
+//                }
+//            }
+//            System.out.println("Actual total keys: " + actualCount);
+//            System.out.println(actualCount == 25 ? "✓ Count matches!" : "✗ Count mismatch!");
+//
+//            tree.close();
+//
+//            System.out.println("\n=== All Tests Completed Successfully ===");
+//
+//        } catch (Exception e) {
+//            System.err.println("\n✗ Test failed with exception:");
+//            e.printStackTrace();
+//        }
+//    }
     
 //    public static void main(String[] args) {
 //

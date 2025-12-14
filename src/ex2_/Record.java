@@ -51,8 +51,8 @@ class Record {
     }
 
     // Deserialize record from bytes
-    public static Record deserialize(byte[] data, int offset) {
-        ByteBuffer buffer = ByteBuffer.wrap(data, offset, 20);
+    public static Record deserialize(byte[] data) {
+        ByteBuffer buffer = ByteBuffer.wrap(data, 0, 20);
         int key = buffer.getInt();
         double mass = buffer.getDouble();
         double height = buffer.getDouble();
