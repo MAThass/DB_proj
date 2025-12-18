@@ -105,8 +105,14 @@ class BPlusTree {
             while (i < leaf.keys.size() && key > leaf.keys.get(i)) {
                 i++;
             }
-            leaf.keys.add(i, key);
-            leaf.records.add(i, record);
+            if ( key == leaf.keys.get(i)) {
+                leaf.records.set(i, record);
+                System.out.println("overide record with key " + key);
+            }else {
+                leaf.keys.add(i, key);
+                leaf.records.add(i, record);
+            }
+
         }
     }
     //may be used during split

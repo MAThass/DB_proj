@@ -1,10 +1,10 @@
 import random
 import csv
 
-n = 100
+n = 20
 test_keys = []
 
-with open("data_100.csv", "w",newline="",encoding="utf-8") as csvfile:
+with open("data_20.csv", "w",newline="",encoding="utf-8") as csvfile:
     writer = csv.writer(csvfile, delimiter=' ')
 
     for _ in range(n):
@@ -35,9 +35,9 @@ with open("data_100.csv", "w",newline="",encoding="utf-8") as csvfile:
 
         writer.writerow([operation, key])
 
-        # 4. SEKCJA TESTOWA: 10 usuwania (d)
-    for key in test_keys:
-        operation = "d"  # 'd' - Usuwanie
-
-            # Format: d <klucz>
-        writer.writerow([operation, key])
+#         # 4. SEKCJA TESTOWA: 10 usuwania (d)
+#     for key in test_keys:
+#         operation = "d"  # 'd' - Usuwanie
+#
+#             # Format: d <klucz>
+#         writer.writerow([operation, key])
